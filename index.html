@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockOS EPI — Gestão de Equipamentos de Proteção</title>
+
+  <!-- Importação das fontes do Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Folha de estilos principal -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Texto oculto para acessibilidade (leitores de tela) -->
+  <h2 class="sr-only">StockOS EPI — Sistema de gestão de estoque de EPIs com controle de CA</h2>
+
+  <!-- ════════════════════════════════════════
+       TELA DE LOGIN
+       Exibida antes do usuário se autenticar
+  ════════════════════════════════════════ -->
+  <div id="login-screen" class="active">
+    <div class="login-wrap">
+
+      <!-- Logo e nome do sistema -->
+      <div class="login-logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">StockOS EPI</div>
+          <div class="logo-sub">Gestão de Equipamentos de Proteção</div>
+        </div>
+      </div>
+
+      <!-- Card com o formulário de login -->
+      <div class="login-card">
+        <div class="login-title">Acessar sistema</div>
+        <div class="login-desc">Entre com suas credenciais para continuar</div>
+
+        <!-- Campo: usuário -->
+        <div class="field">
+          <label class="field-label">Usuário</label>
+          <input class="field-input" id="lu" placeholder="admin" value="admin" />
+        </div>
+
+        <!-- Campo: senha (pressionar Enter também faz login, via JS) -->
+        <div class="field">
+          <label class="field-label">Senha</label>
+          <input class="field-input" id="lp" type="password" placeholder="••••••" value="123456" />
+        </div>
+
+        <!-- Mensagem de erro de autenticação (oculta por padrão) -->
+        <div class="login-err" id="lerr">Usuário ou senha incorretos. Tente novamente.</div>
+
+        <!-- Botão de login -->
+        <button class="btn-login" onclick="doLogin()">Entrar</button>
+
+        <!-- Dica de credenciais para demonstração -->
+        <div class="login-hint">
+          Demo: <code>admin</code> / <code>123456</code> &nbsp;ou&nbsp; <code>gerente</code> / <code>estoque</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       TELA PRINCIPAL DO APP
+       Exibida após o login bem-sucedido
+  ════════════════════════════════════════ -->
+  <div id="app-screen">
+
+    <!-- Barra superior com logo, nome do usuário e botão de sair -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="top-logo">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="top-name">StockOS EPI</span>
+      </div>
+      <div class="topbar-right">
+        <!-- Chip com nome do usuário logado (id="hu" é preenchido via JS) -->
+        <div class="user-chip">
+          <div class="user-dot"></div>
+          <span id="hu">Admin</span>
+        </div>
+        <!-- Botão de reset (limpa localStorage) -->
+        <button class="btn-out" onclick="if(confirm('Limpar todos os dados e reiniciar?')) { localStorage.clear(); location.reload(); }" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);margin-right:8px">Limpar Dados</button>
+        <!-- Botão de logout -->
+        <button class="btn-out" onclick="doLogout()">Sair</button>
+      </div>
+    </div>
+
+    <!-- Corpo do app: sidebar + área de conteúdo -->
+    <div class="app-body">
+
+      <!-- ── MENU LATERAL (SIDEBAR) ── -->
+      <nav class="sidebar">
+        <div class="sidebar-label">Principal</div>
+
+        <!-- Botão: view de Produtos (ativo por padrão) -->
+        <button class="nav-btn active" id="nav-produtos" onclick="showView('produtos')">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+          Produtos
+          <!-- Contador dinâmico de produtos (atualizado via JS) -->
+          <span class="nav-count" id="nc">0</span>
+        </button>
+
+        <!-- Botão: view de Relatório -->
+        <button class="nav-btn" id="nav-relatorio" onclick="showView('relatorio')">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9M13 17V5M8 17v-3"/>
+          </svg>
+          Relatório
+        </button>
+      </nav>
+
+      <!-- ── ÁREA PRINCIPAL DE CONTEÚDO ── -->
+      <main id="main">
+
+        <!-- VIEW: Produtos (listagem e gestão de estoque) -->
+        <div class="view active" id="view-produtos">
+
+          <!-- Cards de estatísticas rápidas (preenchidos via JS) -->
+          <div class="stats-row" id="stats"></div>
+
+          <!-- Barra de filtros: busca por texto + filtro por categoria + botão novo produto -->
+          <div class="toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+              <input class="search-input" id="sq"
+                placeholder="Buscar por nome, SKU ou nº CA…"
+                oninput="renderTable()" />
+            </div>
+            <select class="filter-select" id="catf" onchange="renderTable()">
+              <option value="">Todas as categorias</option>
+            </select>
+            <button class="btn-new" onclick="openModal()">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Novo produto
+            </button>
+          </div>
+
+          <!-- Tabela de produtos (tbody preenchido dinamicamente via JS) -->
+          <div class="table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:22%">Produto</th>
+                    <th style="width:13%">Categoria</th>
+                    <th style="width:16%">Nº CA / Descrição</th>
+                    <th style="width:11%">Validade CA</th>
+                    <th style="width:10%">Status CA</th>
+                    <th style="width:7%">Qtd</th>
+                    <th style="width:9%">Estoque</th>
+                    <th style="width:12%">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: Relatório (resumo, gráficos e alertas) -->
+        <div class="view" id="view-relatorio">
+          <div class="report-grid">
+            <div class="rpt-card" id="rpt-resumo"></div>
+            <div class="rpt-card" id="rpt-cats"></div>
+          </div>
+          <!-- Card de alertas ativos -->
+          <div class="rpt-card" id="rpt-alertas" style="margin-top:1.1rem"></div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         MODAL: Cadastro / Edição de produto
+         Abre como overlay sobre o conteúdo
+    ════════════════════════════════════════ -->
+    <div class="modal-wrap" id="modal-wrap">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title" id="modal-title">Novo produto</div>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+
+        <!-- Linha 1: Nome e SKU -->
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Nome *</label>
+            <input class="form-input" id="f-nome" placeholder="Ex: Capacete ABS Classe B" />
+          </div>
+          <div>
+            <label class="form-label">SKU</label>
+            <input class="form-input" id="f-sku" placeholder="CAP-001" style="font-family:var(--mo)" />
+          </div>
+        </div>
+
+        <!-- Linha 2: Categoria -->
+        <div class="form-full">
+          <label class="form-label">Categoria *</label>
+          <input class="form-input" id="f-cat" placeholder="Ex: Proteção da Cabeça" />
+        </div>
+
+        <!-- Linha 3: Número do CA com botão de consulta -->
+        <div class="form-full">
+          <label class="form-label">Número do CA</label>
+          <div class="ca-row">
+            <input class="form-input" id="f-ca" placeholder="Ex: 46734" style="font-family:var(--mo)" />
+            <button class="btn-ca" id="btn-ca" onclick="consultarCA()">Consultar CA</button>
+          </div>
+          <!-- Resultado da consulta de CA (ok/erro, exibido via JS) -->
+          <div class="ca-result" id="ca-result"></div>
+        </div>
+
+        <!-- Linha 4: Validade do CA -->
+        <div class="form-full">
+          <label class="form-label">Validade do CA</label>
+          <input class="form-input" id="f-val" type="date" />
+        </div>
+
+        <!-- Linha 5: Quantidade em estoque e mínimo -->
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Quantidade *</label>
+            <input class="form-input" id="f-qty" type="number" min="0" placeholder="0" />
+          </div>
+          <div>
+            <label class="form-label">Estoque mínimo</label>
+            <input class="form-input" id="f-min" type="number" min="0" placeholder="5" />
+          </div>
+        </div>
+
+        <!-- Linha 6: Descrição livre -->
+        <div class="form-full">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-textarea" id="f-desc" placeholder="Especificações do EPI…"></textarea>
+        </div>
+
+        <!-- Botões de ação do formulário -->
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+          <button class="btn-save" onclick="saveProduct()">Salvar produto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         MODAL: Confirmação de exclusão
+         Exibe o nome do produto antes de deletar
+    ════════════════════════════════════════ -->
+    <div class="modal-wrap" id="confirm-wrap">
+      <div class="modal" style="max-width:360px">
+        <div class="modal-head">
+          <div class="modal-title" style="color:var(--red)">Excluir produto</div>
+          <button class="modal-close" onclick="closeConfirm()">×</button>
+        </div>
+        <!-- Nome do produto a ser excluído é inserido via JS no span #del-name -->
+        <div class="confirm-msg">
+          Deseja excluir o produto
+          <span class="confirm-highlight" id="del-name"></span>?
+          Esta ação é permanente e não pode ser desfeita.
+        </div>
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
+          <button class="btn-del-confirm" onclick="confirmDelete()">Excluir produto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         TOAST (notificação flutuante)
+         Aparece no canto inferior direito
+    ════════════════════════════════════════ -->
+    <div class="toast" id="toast">
+      <div class="toast-dot" id="toast-dot"></div>
+      <span id="toast-msg"></span>
+    </div>
+
+  </div><!-- fim #app-screen -->
+
+  <!-- Scripts JavaScript (carregados ao final para não bloquear o HTML) -->
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
