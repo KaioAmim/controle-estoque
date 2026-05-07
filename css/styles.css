@@ -1,0 +1,609 @@
+/* ════════════════════════════════════════════════════
+   styles.css — Estilos globais do StockOS EPI
+   Organizado em seções comentadas para facilitar
+   a localização e manutenção de cada bloco visual.
+════════════════════════════════════════════════════ */
+
+/* ── RESET E BOX-MODEL ────────────────────────────
+   Zera margens/paddings e usa box-sizing: border-box
+   em todos os elementos para cálculos previsíveis.
+──────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── VARIÁVEIS CSS (DESIGN TOKENS) ───────────────
+   Centralizadas aqui para facilitar mudança de tema.
+   --bg, --surface, --card: níveis de profundidade do fundo
+   --accent: cor primária (roxo índigo)
+   --green/amber/red: cores semânticas de status
+   --tx, --tx2, --tx3: hierarquia de texto
+   --r, --r2, --r3: border-radius progressivos
+   --fn: fonte principal; --mo: fonte monoespaçada
+──────────────────────────────────────────────────── */
+:root {
+  --bg:         #0c0e14;
+  --surface:    #13151f;
+  --card:       #1a1d2a;
+  --card2:      #20233380;
+  --border:     #2a2d3e;
+  --border2:    #363a52;
+
+  --accent:     #6366f1;
+  --accent-l:   #818cf8;
+  --accent-dim: rgba(99,102,241,.12);
+
+  --green:      #22c55e;
+  --green-dim:  rgba(34,197,94,.12);
+  --green-t:    #16a34a;
+
+  --red:        #ef4444;
+  --red-dim:    rgba(239,68,68,.12);
+  --red-t:      #dc2626;
+
+  --amber:      #f59e0b;
+  --amber-dim:  rgba(245,158,11,.12);
+  --amber-t:    #d97706;
+
+  --sky:        #38bdf8;
+  --sky-dim:    rgba(56,189,248,.1);
+
+  --tx:         #e2e8f0;
+  --tx2:        #94a3b8;
+  --tx3:        #64748b;
+
+  --r:          8px;
+  --r2:         12px;
+  --r3:         16px;
+
+  --fn:         'Inter', sans-serif;
+  --mo:         'JetBrains Mono', monospace;
+}
+
+/* ── BASE ─────────────────────────────────────────
+   Fundo escuro e fonte padrão para todo o documento.
+──────────────────────────────────────────────────── */
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--fn);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Classe utilitária para ocultar visualmente mas manter acessível */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+}
+
+/* ── CONTROLE DE TELAS (SCREENS) ─────────────────
+   Cada tela usa display:none por padrão.
+   A classe .active a torna visível.
+──────────────────────────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+
+/* ════════════════════════════════════════════════
+   TELA DE LOGIN
+════════════════════════════════════════════════ */
+
+/* Centraliza o conteúdo de login na tela */
+#login-screen {
+  min-height: 600px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 2rem;
+}
+#login-screen.active { display: flex; }
+
+/* Limita a largura do formulário de login */
+.login-wrap { width: 100%; max-width: 380px; }
+
+/* Logo: ícone + nome do sistema */
+.login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; }
+.logo-mark {
+  width: 44px; height: 44px;
+  background: var(--accent);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-mark svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.logo-text { font-size: 20px; font-weight: 600; color: var(--tx); }
+.logo-sub  { font-size: 11px; color: var(--tx3); letter-spacing: .04em; margin-top: 1px; }
+
+/* Card que contém o formulário */
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r3);
+  padding: 2rem;
+}
+.login-title { font-size: 18px; font-weight: 600; margin-bottom: .25rem; }
+.login-desc  { font-size: 13px; color: var(--tx2); margin-bottom: 1.75rem; }
+
+/* Campo de formulário (label + input) */
+.field { margin-bottom: 1.1rem; }
+.field-label {
+  display: block;
+  font-size: 11px; font-weight: 500; color: var(--tx3);
+  letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.field-input {
+  width: 100%; height: 40px; padding: 0 12px;
+  font-size: 13px; font-family: var(--fn);
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--r); color: var(--tx);
+  outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.2);
+}
+
+/* Botão principal de login */
+.btn-login {
+  width: 100%; height: 40px; margin-top: .5rem;
+  font-size: 13px; font-weight: 600; font-family: var(--fn);
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--r);
+  cursor: pointer; transition: background .15s, transform .1s;
+}
+.btn-login:hover  { background: var(--accent-l); }
+.btn-login:active { transform: scale(.98); }
+
+/* Mensagem de erro (visível via JS) */
+.login-err { font-size: 12px; color: var(--red); margin-top: .5rem; display: none; }
+
+/* Dica de credenciais de demonstração */
+.login-hint { font-size: 11px; color: var(--tx3); text-align: center; margin-top: 1.25rem; }
+.login-hint code {
+  font-family: var(--mo); color: var(--accent-l);
+  background: var(--accent-dim); padding: 1px 5px; border-radius: 4px;
+}
+
+
+/* ════════════════════════════════════════════════
+   SHELL DO APP (após o login)
+════════════════════════════════════════════════ */
+
+#app-screen {
+  display: none;
+  flex-direction: column;
+  min-height: 600px;
+  background: var(--bg);
+  position: relative; /* necessário para o Toast ficar posicionado dentro */
+}
+#app-screen.active { display: flex; }
+
+
+/* ── TOPBAR (barra superior) ──────────────────── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; height: 56px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; /* nunca encolhe */
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.top-logo {
+  width: 32px; height: 32px;
+  background: var(--accent); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.top-logo svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.top-name { font-size: 15px; font-weight: 600; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+/* Chip com nome do usuário logado */
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+/* Indicador de status "online" (ponto verde) */
+.user-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+
+/* Botão de sair */
+.btn-out {
+  height: 32px; padding: 0 12px;
+  font-size: 12px; font-weight: 500; font-family: var(--fn);
+  background: transparent; color: var(--tx2);
+  border: 1px solid var(--border); border-radius: 20px;
+  cursor: pointer; transition: .15s;
+}
+.btn-out:hover { color: var(--red); border-color: var(--red); }
+
+
+/* ── LAYOUT DO CORPO (sidebar + main) ────────── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(600px - 56px); /* altura total menos a topbar */
+}
+
+
+/* ── SIDEBAR (menu lateral) ───────────────────── */
+.sidebar {
+  width: 200px;
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 1rem .75rem;
+  display: flex; flex-direction: column; gap: 2px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+/* Rótulo de seção do menu (ex: "Principal") */
+.sidebar-label {
+  font-size: 10px; font-weight: 600; color: var(--tx3);
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 0 8px; margin: 12px 0 6px;
+}
+.sidebar-label:first-child { margin-top: 0; }
+
+/* Botão de navegação no sidebar */
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--r);
+  font-size: 13px; font-weight: 500; color: var(--tx2);
+  cursor: pointer; transition: background .12s, color .12s;
+  border: none; background: transparent;
+  width: 100%; text-align: left;
+}
+.nav-btn:hover         { background: var(--card); color: var(--tx); }
+.nav-btn.active        { background: var(--accent-dim); color: var(--accent-l); }
+.nav-btn svg           { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Badge numérico (ex: quantidade de produtos) */
+.nav-count {
+  margin-left: auto;
+  font-size: 10px; font-family: var(--mo);
+  background: var(--accent); color: #fff;
+  padding: 1px 7px; border-radius: 10px; font-weight: 500;
+}
+
+
+/* ── ÁREA PRINCIPAL (main) ────────────────────── */
+main {
+  flex: 1; overflow-y: auto;
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+
+/* Views de conteúdo: apenas a .active fica visível */
+.view        { display: none; }
+.view.active { display: contents; }
+
+
+/* ════════════════════════════════════════════════
+   CARDS DE ESTATÍSTICAS (topo da view de Produtos)
+════════════════════════════════════════════════ */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1rem 1.1rem; }
+.stat-card-label { font-size: 11px; font-weight: 500; color: var(--tx3); letter-spacing: .04em; margin-bottom: .5rem; }
+.stat-card-val   { font-size: 24px; font-weight: 600; line-height: 1; margin-bottom: 3px; }
+.stat-card-sub   { font-size: 11px; color: var(--tx3); }
+
+/* Variantes de cor para os valores dos cards */
+.val-sky   { color: var(--sky); }
+.val-green { color: var(--green); }
+.val-amber { color: var(--amber); }
+.val-red   { color: var(--red); }
+
+
+/* ════════════════════════════════════════════════
+   TOOLBAR (barra de filtros e ação)
+════════════════════════════════════════════════ */
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Campo de busca com ícone de lupa posicionado via absolute */
+.search-box { position: relative; flex: 1; min-width: 160px; }
+.search-box svg {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; fill: none; stroke: var(--tx3); stroke-width: 2; stroke-linecap: round;
+  pointer-events: none; /* não interfere no clique do input */
+}
+.search-input {
+  width: 100%; height: 38px; padding: 0 10px 0 34px; /* padding-left acomoda o ícone */
+  font-size: 13px; font-family: var(--fn);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); color: var(--tx);
+  outline: none; transition: .15s;
+}
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+
+/* Select de filtro por categoria */
+.filter-select {
+  height: 38px; padding: 0 10px;
+  font-size: 13px; font-family: var(--fn);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); color: var(--tx);
+  outline: none; cursor: pointer;
+}
+
+/* Botão "+ Novo produto" */
+.btn-new {
+  display: flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 16px;
+  font-size: 13px; font-weight: 600; font-family: var(--fn);
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--r);
+  cursor: pointer; transition: background .15s; white-space: nowrap;
+}
+.btn-new:hover { background: var(--accent-l); }
+.btn-new svg   { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; }
+
+
+/* ════════════════════════════════════════════════
+   TABELA DE PRODUTOS
+════════════════════════════════════════════════ */
+.table-card   { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; }
+.table-scroll { overflow-x: auto; } /* scroll horizontal em telas pequenas */
+
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px; min-width: 620px; /* evita quebra de layout em telas pequenas */
+}
+
+/* Cabeçalho da tabela */
+thead th {
+  padding: 10px 14px;
+  text-align: left; font-size: 10px; font-weight: 600; color: var(--tx3);
+  letter-spacing: .06em; text-transform: uppercase;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Linhas do corpo da tabela */
+tbody tr { border-bottom: 1px solid rgba(42,45,62,.6); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover      { background: rgba(99,102,241,.04); } /* destaque sutil ao hover */
+tbody td { padding: 11px 14px; vertical-align: middle; }
+
+/* Células com formatação especial */
+.cell-name { font-weight: 500; color: var(--tx); font-size: 13px; }
+.cell-sku  { font-size: 11px; color: var(--tx3); font-family: var(--mo); margin-top: 2px; }
+.cell-ca   { font-family: var(--mo); font-size: 12px; color: var(--sky); font-weight: 500; }
+.cell-ca-desc {
+  font-size: 10px; color: var(--tx3); margin-top: 2px;
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cell-date { font-family: var(--mo); font-size: 12px; color: var(--tx2); }
+
+/* Quantidade em estoque (fonte mono para alinhamento) */
+.qty-cell { font-family: var(--mo); font-size: 13px; font-weight: 500; }
+
+/* Linha de "sem resultados" */
+.empty-row td { text-align: center; padding: 3rem; color: var(--tx3); font-size: 13px; }
+
+
+/* ── BADGES (etiquetas de status) ─────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+/* Ponto colorido dentro do badge */
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+/* Variantes semânticas de badge */
+.badge-ok     { background: var(--green-dim); color: var(--green-t); }
+.badge-ok     .badge-dot { background: var(--green); }
+.badge-warn   { background: var(--amber-dim); color: var(--amber-t); }
+.badge-warn   .badge-dot { background: var(--amber); }
+.badge-danger { background: var(--red-dim);   color: var(--red-t); }
+.badge-danger .badge-dot { background: var(--red); }
+.badge-none   { background: rgba(100,116,139,.1); color: var(--tx3); }
+.badge-none   .badge-dot { background: var(--tx3); }
+
+/* Badge específico de categoria (cor roxa) */
+.badge-cat { background: var(--accent-dim); color: var(--accent-l); font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+
+
+/* ── BOTÕES DE AÇÃO DA TABELA ─────────────────── */
+.actions { display: flex; gap: 6px; }
+.btn-edit, .btn-del {
+  height: 28px; padding: 0 10px;
+  font-size: 11px; font-weight: 500; font-family: var(--fn);
+  border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; transition: .12s;
+}
+.btn-edit { color: var(--accent-l); }
+.btn-edit:hover { background: var(--accent-dim); border-color: var(--accent); }
+.btn-del  { color: var(--red); }
+.btn-del:hover  { background: var(--red-dim);    border-color: var(--red); }
+
+
+/* ════════════════════════════════════════════════
+   MODAIS (overlay de formulários e confirmações)
+════════════════════════════════════════════════ */
+
+/* Fundo escurecido que cobre o app */
+.modal-wrap {
+  min-height: 700px;
+  background: rgba(12,14,20,.85);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 40px 16px;
+}
+.modal-wrap.open { display: flex; } /* aberto via JS */
+
+/* Caixa do modal */
+.modal {
+  width: 100%; max-width: 460px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--r3); padding: 1.75rem;
+}
+
+/* Cabeçalho do modal (título + botão fechar) */
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close {
+  width: 30px; height: 30px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--tx2); font-size: 17px; line-height: 1; transition: .12s;
+}
+.modal-close:hover { color: var(--red); border-color: var(--red); }
+
+/* Grid de 2 colunas para campos lado a lado */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-full  { margin-bottom: 12px; }
+
+/* Label dos campos do formulário */
+.form-label {
+  display: block;
+  font-size: 11px; font-weight: 500; color: var(--tx3);
+  letter-spacing: .05em; text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+/* Inputs, selects e textareas do formulário */
+.form-input, .form-select, .form-textarea {
+  width: 100%; height: 38px; padding: 0 11px;
+  font-size: 13px; font-family: var(--fn);
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--r); color: var(--tx);
+  outline: none; transition: .15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.18);
+}
+/* Textarea tem altura automática e redimensionável verticalmente */
+.form-textarea { height: auto; min-height: 64px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
+
+/* Linha do campo CA (input + botão consultar lado a lado) */
+.ca-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.ca-row .form-input { flex: 1; font-family: var(--mo); }
+
+/* Botão "Consultar CA" */
+.btn-ca {
+  height: 38px; padding: 0 14px;
+  font-size: 12px; font-weight: 600; font-family: var(--fn);
+  background: var(--surface); color: var(--accent-l);
+  border: 1px solid var(--accent); border-radius: var(--r);
+  cursor: pointer; transition: .12s; white-space: nowrap; flex-shrink: 0;
+}
+.btn-ca:hover    { background: var(--accent-dim); }
+.btn-ca:disabled { opacity: .5; cursor: wait; }
+
+/* Caixa de resultado da consulta de CA */
+.ca-result {
+  padding: 10px 12px; border-radius: var(--r);
+  font-size: 12px; margin-bottom: 12px;
+  line-height: 1.6; display: none;
+  border: 1px solid transparent;
+}
+.ca-result.ok  { background: var(--green-dim); border-color: rgba(34,197,94,.3);  color: var(--tx2); }
+.ca-result.ok strong { color: var(--green-t); }
+.ca-result.err { background: var(--red-dim);   border-color: rgba(239,68,68,.3);  color: var(--red-t); }
+
+/* Botões de ação do modal (cancelar / salvar) */
+.form-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+.btn-cancel {
+  flex: 1; height: 40px;
+  font-size: 13px; font-weight: 500; font-family: var(--fn);
+  background: transparent; color: var(--tx2);
+  border: 1px solid var(--border); border-radius: var(--r);
+  cursor: pointer; transition: .12s;
+}
+.btn-cancel:hover { border-color: var(--border2); color: var(--tx); }
+
+.btn-save {
+  flex: 2; height: 40px;
+  font-size: 13px; font-weight: 600; font-family: var(--fn);
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--r); cursor: pointer; transition: .12s;
+}
+.btn-save:hover { background: var(--accent-l); }
+
+/* Botão de confirmação de exclusão (vermelho) */
+.btn-del-confirm {
+  flex: 2; height: 40px;
+  font-size: 13px; font-weight: 600; font-family: var(--fn);
+  background: var(--red); color: #fff;
+  border: none; border-radius: var(--r); cursor: pointer; transition: .12s;
+}
+.btn-del-confirm:hover { filter: brightness(1.1); }
+
+/* Mensagem do modal de confirmação de exclusão */
+.confirm-msg       { font-size: 13px; color: var(--tx2); line-height: 1.65; margin-bottom: 1.25rem; }
+.confirm-highlight { font-weight: 600; color: var(--tx); }
+
+
+/* ════════════════════════════════════════════════
+   RELATÓRIO
+════════════════════════════════════════════════ */
+.report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; }
+.rpt-card    { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
+.rpt-title   { font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: var(--tx); }
+
+/* Linha de item do relatório (label à esquerda, valor à direita) */
+.rpt-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .5rem 0; border-bottom: 1px solid rgba(42,45,62,.5);
+  font-size: 13px;
+}
+.rpt-row:last-child { border-bottom: none; }
+.rpt-lbl { color: var(--tx2); }
+.rpt-val  { font-weight: 600; font-family: var(--mo); }
+
+/* Gráfico de barras horizontal para EPIs por categoria */
+.bar-item   { margin-bottom: 10px; }
+.bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--tx3); margin-bottom: 4px; }
+.bar-track  { height: 5px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+.bar-fill   { height: 100%; border-radius: 3px; background: var(--accent); transition: width .4s; }
+
+
+/* ════════════════════════════════════════════════
+   SPINNER DE CARREGAMENTO
+   Usado no botão "Consultar CA" enquanto aguarda
+════════════════════════════════════════════════ */
+.spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .55s linear infinite;
+  vertical-align: middle; margin-right: 5px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* ════════════════════════════════════════════════
+   TOAST (notificação flutuante no canto inferior)
+════════════════════════════════════════════════ */
+.toast {
+  position: absolute;
+  bottom: 1.25rem; right: 1.25rem;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--r2); padding: .7rem 1rem;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+  z-index: 300;
+  /* Começa invisível e deslocado; .show o traz à tela */
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none; /* não bloqueia cliques enquanto visível */
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Ponto colorido que indica o tipo do toast (success/warning/danger) */
+.toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
