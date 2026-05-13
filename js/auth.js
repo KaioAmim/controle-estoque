@@ -34,11 +34,17 @@ function doLogin() {
   currentUser = user;
 
   // Atualiza o nome do usuário na barra superior
-  document.getElementById('hu').textContent = user.n;
+  document.getElementById("hu").textContent = user.n;
+
+  // Mostra o botão de usuários apenas se for admin
+  const navUsuarios = document.getElementById("nav-usuarios");
+  if (navUsuarios) {
+    navUsuarios.style.display = user.u === "admin" ? "flex" : "none";
+  }
 
   // Troca de tela: esconde login, exibe o app
-  document.getElementById('login-screen').classList.remove('active');
-  document.getElementById('app-screen').classList.add('active');
+  document.getElementById("login-screen").classList.remove("active");
+  document.getElementById("app-screen").classList.add("active");
 
   // Carrega e renderiza todos os dados do sistema
   renderAll();
@@ -66,3 +72,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+
+/* Recuperação de senha */
+function openForgotPasswordModal() {
+  document.getElementById('forgot-modal-wrap').classList.add('open');
+}
+
+function closeForgotPasswordModal() {
+  document.getElementById('forgot-modal-wrap').classList.remove('open');
+}
+
+function sendPasswordReset() {
+  const user = document.getElementById('forgot-user').value.trim();
+  const email = document.getElementById('forgot-email').value.trim();
+  const err = document.getElementById('forgot-err');
+
+  err.style.display = 'none';
+
+  if (!user || !email) {
+    err.textContent = 'Preencha o usuário e o e-mail.';
+    err.style.display = 'block';
+    return;
+  }
+
+  toast(`Link de redefinição enviado para ${email}.`, 'green');
+  closeForgotPasswordModal();
+
+  // Aqui pode ser integrado futuramente com backend PHP + SMTP.
+  console.log('Recuperação solicitada para:', user, email);
+}

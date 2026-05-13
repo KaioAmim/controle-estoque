@@ -10,7 +10,7 @@
  * Remove a classe "active" de todas as views e botões do menu,
  * depois ativa apenas a view e o botão correspondentes ao parâmetro.
  *
- * @param {string} v - Identificador da view: 'produtos' ou 'relatorio'
+ * @param {string} v - Identificador da view: 'produtos', 'relatorio' ou 'usuarios'
  */
 function showView(v) {
   // Desativa todas as views
@@ -25,6 +25,9 @@ function showView(v) {
 
   // Se a view ativa for "relatório", renderiza os dados do relatório
   if (v === 'relatorio') renderReport();
+  
+  // Se a view ativa for "usuarios", renderiza a tabela de usuários
+  if (v === 'usuarios') renderUsers();
 }
 
 /**

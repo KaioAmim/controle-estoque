@@ -7,12 +7,32 @@
 ════════════════════════════════════════════════════ */
 
 /* ── USUÁRIOS DO SISTEMA ─────────────────────────
-   Lista estática de usuários para autenticação.
+   Carregados do localStorage ou com valores padrão.
 ──────────────────────────────────────────────────── */
-const USERS = [
+let USERS = [
   { u: 'admin',   p: '123456', n: 'Admin'   },
   { u: 'gerente', p: 'estoque', n: 'Gerente' },
 ];
+
+// Carrega usuários salvos no localStorage (se existirem)
+function loadUsers() {
+  try {
+    const saved = localStorage.getItem('stockos_users');
+    if (saved) {
+      USERS = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Erro ao carregar usuários:', e);
+  }
+}
+
+// Salva usuários no localStorage
+function saveUsers() {
+  localStorage.setItem('stockos_users', JSON.stringify(USERS));
+}
+
+// Carrega usuários ao inicializar
+loadUsers();
 
 /* ── BASE DE DADOS LOCAL DE CAs ──────────────────
    Removida a base estática para priorizar a consulta real.
@@ -31,6 +51,7 @@ let delId       = null; // ID do produto a ser excluído
 let caCache     = null; // Dados do CA consultado (para evitar re-consulta)
 let toastTimer  = null; // Referência ao timer do toast (para cancelamento)
 let currentUser = null; // Objeto do usuário logado
+let editUserId  = null; // ID do usuário em edição (para gerenciamento de usuários)
 
 
 /* ════════════════════════════════════════════════
@@ -138,3 +159,32 @@ function seed() {
   // Não faz nada para iniciar o sistema limpo
   // Se quiser dados de exemplo, adicione-os aqui.
 }
+
+
+async function loadUsersFromDB() {
+  try {
+    const r = await fetch('api/users.php');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    USERS = await r.json(); // já vem no formato {id, u, p, n, e}
+    saveUsers();
+  } catch(e) {
+    console.error('Erro ao carregar usuários:', e);
+  }
+}
+
+async function loadProductsFromDB() {
+  try {
+    const r = await fetch('api/products.php');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json(); // já vem no formato {id, nome, sku, cat, ca, val, qty, min, desc}
+    localStorage.setItem('stockos_v3', JSON.stringify(data));
+  } catch(e) {
+    console.error('Erro ao carregar produtos:', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async ()=>{
+ await loadUsersFromDB();
+ await loadProductsFromDB();
+ renderAll?.();
+});

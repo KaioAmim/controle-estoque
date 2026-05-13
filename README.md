@@ -15,3 +15,9 @@ Projeto de extensão da faculdade
 // PROBLEMA 3
 
 -Criar campo esqueci a senha, levar redefinicao para o email
+
+
+## Atualizações recentes
+- Filtro de estoque por status (Normal, Baixo e Zerado)
+- Arquivo `database.sql` criado para persistência dos produtos e usuários em MySQL
+- Estrutura pronta para tabela de produtos e cadastro de usuários

@@ -102,6 +102,7 @@ function renderCats() {
 function renderTable() {
   const q   = document.getElementById('sq').value.toLowerCase();
   const cat = document.getElementById('catf').value;
+  const stock = document.getElementById('stockf').value;
 
   // Filtra os produtos conforme os critérios ativos
   const db = gDB().filter(p => {
@@ -109,7 +110,14 @@ function renderTable() {
       p.nome.toLowerCase().includes(q) ||
       (p.sku || '').toLowerCase().includes(q) ||
       (p.ca  || '').includes(q);
-    return mq && (!cat || p.cat === cat);
+
+    const status = estqStatus(p.qty, p.min).lbl.toLowerCase();
+    const stockMatch = !stock ||
+      (stock === 'normal' && status === 'normal') ||
+      (stock === 'baixo' && status === 'baixo') ||
+      (stock === 'zerado' && status === 'zerado');
+
+    return mq && (!cat || p.cat === cat) && stockMatch;
   });
 
   const tb = document.getElementById('tbody');
@@ -133,7 +141,7 @@ function renderTable() {
         </td>
         <td><span class="badge-cat">${esc(p.cat)}</span></td>
         <td>
-          <div class="cell-ca">${p.ca ? 'CA ' + esc(p.ca) : '—'}</div>
+          <div class="cell-ca">${p.ca ? `<a href="https://consultaca.com/${esc(p.ca)}" target="_blank">${esc(p.ca)}</a>` : '—'}</div>
           ${caDesc ? `<div class="cell-ca-desc" title="${esc(caDesc)}">${esc(caDesc)}</div>` : ''}
         </td>
       <td><div class="cell-date">${fmt(p.val)}</div></td>
@@ -239,84 +247,45 @@ function closeModal() {
  *  Sucesso: { sucesso: true, ca: "46734", validade: "2026-08-15" }
  *  Erro:    { sucesso: false, erro: "mensagem" }
  */
+/**
+ * Consulta o CA no site consultaca.com via PHP intermediário.
+ * Após sucesso, busca o produto no banco de dados e redireciona para a tela do produto.
+ *
+ * Por que o PHP é necessário aqui?
+ * O navegador não pode buscar diretamente um site externo por
+ * segurança (política de CORS). O PHP funciona como um
+ * "intermediário": o JS chama o nosso PHP, e o PHP busca
+ * o consultaca.com no servidor e devolve o resultado.
+ *
+ * Fluxo:
+ *  JS → api/consultar_ca.php → consultaca.com → PHP → JS → Busca produto e redireciona
+ *
+ * Resposta esperada do PHP:
+ *  Sucesso: { sucesso: true, ca: "46734", validade: "2026-08-15", descricao: "..." }
+ *  Erro:    { sucesso: false, erro: "mensagem" }
+ */
 async function consultarCA() {
   const ca  = document.getElementById('f-ca').value.trim();
-  const btn = document.getElementById('btn-ca');
-  const res = document.getElementById('ca-result');
 
-  // Valida: o CA deve conter apenas números
   if (!ca || !/^\d+$/.test(ca)) {
     toast('Informe um número de CA válido.', 'amber');
     return;
   }
 
-  // Desabilita o botão e exibe spinner enquanto aguarda resposta
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Consultando…';
-  res.style.display = 'none';
+  window.open(`https://consultaca.com/${encodeURIComponent(ca)}`, '_blank');
+}
 
-  try {
-    // Chama o PHP passando o número do CA como parâmetro na URL
-    const response = await fetch(`api/proxy_ca.php?ca=${encodeURIComponent(ca)}`);
-
-    // Verifica se a resposta HTTP foi bem-sucedida (status 200)
-    if (!response.ok) {
-      throw new Error(`Erro HTTP ${response.status}`);
-    }
-
-    // Converte a resposta de JSON para objeto JavaScript
-    const data = await response.json();
-
-    if (data.sucesso) {
-      // ── SUCESSO: CA encontrado e validade extraída ──
-
-      // Armazena em cache para uso posterior (ex: ao salvar o produto)
-      caCache = { ca: data.ca, val: data.validade };
-
-      // Preenche automaticamente o campo de data de validade e descrição
-      document.getElementById('f-val').value = data.validade || '';
-      if (data.descricao) {
-        document.getElementById('f-desc').value = data.descricao;
-      }
-
-      // Exibe painel verde de sucesso com badge de status
-      const sc = caStatus(data.validade);
-      const badgeHtml = `<span class="badge ${sc.cls}" style="font-size:11px"><span class="badge-dot"></span>${sc.lbl}</span>`;
-      res.className = 'ca-result ok';
-      res.innerHTML = `
-        <strong>CA ${esc(data.ca)} encontrado</strong> ${badgeHtml}<br>
-        Fonte: <a href="https://consultaca.com/${esc(data.ca)}" target="_blank"
-          style="color:var(--accent-l)">consultaca.com</a><br>
-        Validade: <strong>${fmt(data.validade)}</strong>
-      `;
-      res.style.display = 'block';
-
-    } else {
-      // ── ERRO RETORNADO PELO PHP (CA não encontrado, falha de rede, etc.) ──
-      res.className = 'ca-result err';
-      res.innerHTML = `<strong>Não foi possível consultar o CA ${esc(ca)}.</strong><br>
-        ${esc(data.erro || 'Erro desconhecido.')}<br>
-        <span style="opacity:.8">Você pode informar a validade manualmente ou
-        <a href="https://consultaca.com/${esc(ca)}" target="_blank"
-          style="color:inherit;text-decoration:underline">consultar direto no site</a>.</span>`;
-      res.style.display = 'block';
-    }
-
-  } catch (err) {
-    // ── ERRO DE REDE ou falha inesperada no fetch ──
-    // Isso acontece se o servidor PHP estiver offline ou inacessível
-    res.className = 'ca-result err';
-    res.innerHTML = `<strong>Erro de conexão com o servidor.</strong><br>
-      Verifique se o servidor PHP está rodando e tente novamente.<br>
-      <em style="opacity:.7">Detalhe: ${esc(err.message)}</em>`;
-    res.style.display = 'block';
-
-    console.error('[consultarCA] Erro ao chamar api/consultar_ca.php:', err);
-  } finally {
-    // Sempre reabilita o botão, independente do resultado
-    btn.disabled = false;
-    btn.textContent = 'Consultar CA';
-  }
+/**
+ * Visualiza um produto específico no sistema.
+ * Fecha o modal de cadastro, busca o produto e abre sua edição.
+ * @param {string} id - ID do produto a visualizar
+ */
+function visualizarProduto(id) {
+  closeModal();
+  // Aguarda um pequeno delay para a animação de fechamento
+  setTimeout(() => {
+    openModal(id);
+  }, 300);
 }
 
 
@@ -329,19 +298,15 @@ async function consultarCA() {
  * e salva no localStorage (criando novo ou atualizando existente).
  * Após salvar: fecha o modal, re-renderiza a interface e exibe toast.
  */
-function saveProduct() {
+async function saveProduct() {
   const nome = document.getElementById('f-nome').value.trim();
-  const cat  = document.getElementById('f-cat').value.trim();
+  const cat  = document.getElementById('f-cat').value;
 
-  // Validações dos campos obrigatórios
   if (!nome) { toast('O nome do produto é obrigatório.', 'danger'); return; }
   if (!cat)  { toast('A categoria é obrigatória.', 'danger');        return; }
 
-  const db = gDB();
-
-  // Monta o objeto do produto com os valores do formulário
   const obj = {
-    id:   editId || uid(),                               // mantém o ID se for edição
+    id:   editId || null,   // null = novo; INT vem do banco
     nome,
     sku:  document.getElementById('f-sku').value.trim() || '—',
     cat,
@@ -352,21 +317,37 @@ function saveProduct() {
     desc: document.getElementById('f-desc').value.trim(),
   };
 
-  if (editId) {
-    // Modo edição: substitui o produto existente pelo atualizado
-    const i = db.findIndex(x => x.id === editId);
-    if (i >= 0) db[i] = obj;
-  } else {
-    // Modo criação: adiciona o novo produto ao final da lista
-    db.push(obj);
+  closeModal();
+
+  try {
+    const res = await fetch('api/products.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(obj)
+    });
+    const json = await res.json();
+    if (json.success) {
+      // Usa o id real retornado pelo banco (INT AUTO_INCREMENT)
+      obj.id = json.id;
+
+      // Atualiza localStorage com o id correto do banco
+      const db = gDB();
+      if (editId) {
+        const i = db.findIndex(x => x.id == editId);
+        if (i >= 0) db[i] = obj;
+      } else {
+        db.push(obj);
+      }
+      sDB(db);
+      renderAll();
+      toast(editId ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.', 'green');
+    } else {
+      toast('Erro ao salvar: ' + (json.erro || 'desconhecido'), 'danger');
+    }
+  } catch (e) {
+    toast('Erro de conexão com o servidor.', 'danger');
+    console.error(e);
   }
-
-  sDB(db);         // persiste no localStorage
-  closeModal();    // fecha o modal
-  renderAll();     // atualiza a interface
-
-  // Exibe feedback de sucesso ao usuário
-  toast(editId ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.', 'green');
 }
 
 
@@ -398,15 +379,26 @@ function closeConfirm() {
  * Confirma e executa a exclusão do produto com ID em `delId`.
  * Remove o produto do banco, fecha o modal e atualiza a interface.
  */
-function confirmDelete() {
+async function confirmDelete() {
   if (!delId) return;
+  const id = delId;
 
-  // Filtra o produto com o ID marcado para exclusão
-  sDB(gDB().filter(x => x.id !== delId));
-
+  // Remove localmente (usa == para comparar INT vs string)
+  sDB(gDB().filter(x => x.id != id));
   closeConfirm();
   renderAll();
   toast('Produto removido do estoque.', 'danger');
+
+  // Sincroniza com o banco
+  try {
+    await fetch('api/products.php', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: Number(id) })
+    });
+  } catch (e) {
+    console.warn('Falha ao remover do banco:', e);
+  }
 }
 
 

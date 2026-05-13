@@ -378,7 +378,9 @@ tbody td { padding: 11px 14px; vertical-align: middle; }
 /* Células com formatação especial */
 .cell-name { font-weight: 500; color: var(--tx); font-size: 13px; }
 .cell-sku  { font-size: 11px; color: var(--tx3); font-family: var(--mo); margin-top: 2px; }
-.cell-ca   { font-family: var(--mo); font-size: 12px; color: var(--sky); font-weight: 500; }
+.cell-ca{ text-align:center; font-family: var(--mo); font-size: 12px; font-weight: 500; }
+.cell-ca a{ color:#67e8f9; text-decoration:none; font-weight:600; display:inline-block; width:100%; }
+.cell-ca a:hover{ color:#a5f3fc; text-decoration:none; }
 .cell-ca-desc {
   font-size: 10px; color: var(--tx3); margin-top: 2px;
   max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -484,6 +486,16 @@ tbody td { padding: 11px 14px; vertical-align: middle; }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(99,102,241,.18);
+}
+/* Select estilizado igual ao input */
+select.form-input, select.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+  cursor: pointer;
 }
 /* Textarea tem altura automática e redimensionável verticalmente */
 .form-textarea { height: auto; min-height: 64px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
@@ -607,3 +619,26 @@ tbody td { padding: 11px 14px; vertical-align: middle; }
 
 /* Ponto colorido que indica o tipo do toast (success/warning/danger) */
 .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+
+.forgot-password {
+  width: 100%;
+  margin-top: 12px;
+  background: transparent;
+  border: none;
+  color: var(--accent-l);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+#view-usuarios {
+  width: 100%;
+}
+
+#view-usuarios .toolbar {
+  justify-content: flex-end;
+}

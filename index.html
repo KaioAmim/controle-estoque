@@ -63,6 +63,8 @@
         <!-- Botão de login -->
         <button class="btn-login" onclick="doLogin()">Entrar</button>
 
+        <button class="forgot-password" onclick="openForgotPasswordModal()">Esqueci minha senha</button>
+
         <!-- Dica de credenciais para demonstração -->
         <div class="login-hint">
           Demo: <code>admin</code> / <code>123456</code> &nbsp;ou&nbsp; <code>gerente</code> / <code>estoque</code>
@@ -129,6 +131,18 @@
           </svg>
           Relatório
         </button>
+
+        <!-- Botão: view de Usuários (apenas para admin) -->
+        <div class="sidebar-label" style="margin-top:1.5rem">Administração</div>
+        <button class="nav-btn" id="nav-usuarios" onclick="showView('usuarios')" style="display:none">
+          <svg viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Usuários
+        </button>
       </nav>
 
       <!-- ── ÁREA PRINCIPAL DE CONTEÚDO ── -->
@@ -153,6 +167,12 @@
             </div>
             <select class="filter-select" id="catf" onchange="renderTable()">
               <option value="">Todas as categorias</option>
+            </select>
+            <select class="filter-select" id="stockf" onchange="renderTable()">
+              <option value="">Todo estoque</option>
+              <option value="normal">Estoque normal</option>
+              <option value="baixo">Estoque baixo</option>
+              <option value="zerado">Estoque zerado</option>
             </select>
             <button class="btn-new" onclick="openModal()">
               <svg viewBox="0 0 24 24">
@@ -196,6 +216,38 @@
         </div>
 
       </main>
+
+        <!-- VIEW: Usuários (gerenciamento e cadastro) -->
+        <div class="view" id="view-usuarios">
+          <!-- Botão para novo usuário -->
+          <div class="toolbar">
+            <div style="flex:1"></div>
+            <button class="btn-new" onclick="openUserModal()">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Novo usuário
+            </button>
+          </div>
+
+          <!-- Tabela de usuários -->
+          <div class="table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:25%">Usuário</th>
+                    <th style="width:25%">Nome</th>
+                    <th style="width:20%">Tipo</th>
+                    <th style="width:30%">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
     </div>
 
     <!-- ════════════════════════════════════════
@@ -224,7 +276,18 @@
         <!-- Linha 2: Categoria -->
         <div class="form-full">
           <label class="form-label">Categoria *</label>
-          <input class="form-input" id="f-cat" placeholder="Ex: Proteção da Cabeça" />
+          <select class="form-input" id="f-cat">
+            <option value="">- Selecione uma categoria -</option>
+            <option value="Proteção da Cabeça">Proteção da Cabeça</option>
+            <option value="Proteção dos Olhos e Face">Proteção dos Olhos e Face</option>
+            <option value="Proteção Auditiva">Proteção Auditiva</option>
+            <option value="Proteção Respiratória">Proteção Respiratória</option>
+            <option value="Proteção das Mãos e Braços">Proteção das Mãos e Braços</option>
+            <option value="Proteção dos Pés e Pernas">Proteção dos Pés e Pernas</option>
+            <option value="Proteção do Corpo e Tronco">Proteção do Corpo e Tronco</option>            
+            <option value="Equipamentos de Emergência">Equipamentos de Emergência</option>
+            <option value="Outros">Outros</option>
+          </select>
         </div>
 
         <!-- Linha 3: Número do CA com botão de consulta -->
@@ -302,7 +365,91 @@
       <span id="toast-msg"></span>
     </div>
 
+    <!-- ════════════════════════════════════════
+         MODAL: Cadastro / Edição de usuário
+         Abre como overlay sobre o conteúdo
+    ════════════════════════════════════════ -->
+    <div class="modal-wrap" id="user-modal-wrap">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title" id="user-modal-title">Novo usuário</div>
+          <button class="modal-close" onclick="closeUserModal()">×</button>
+        </div>
+
+        <!-- Linha 1: Usuário e Senha -->
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Usuário *</label>
+            <input class="form-input" id="f-user-u" placeholder="Ex: joao.silva" />
+          </div>
+          <div>
+            <label class="form-label">Senha *</label>
+            <input class="form-input" id="f-user-p" type="password" placeholder="••••••" />
+          </div>
+        </div>
+
+        <!-- Linha 2: Nome -->
+        <div class="form-full">
+          <label class="form-label">Nome Completo *</label>
+          <input class="form-input" id="f-user-n" placeholder="Ex: João Silva" />
+        </div>
+
+        <!-- Mensagem de erro -->
+        <div class="login-err" id="user-err" style="display:none;margin-bottom:1rem"></div>
+
+        <!-- Botões de ação do formulário -->
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
+          <button class="btn-save" onclick="saveUser()">Salvar usuário</button>
+        </div>
+      </div>
+    </div>
   </div><!-- fim #app-screen -->
+
+
+    <!-- MODAL: Recuperação de senha -->
+    <div class="modal-wrap" id="forgot-modal-wrap">
+      <div class="modal" style="max-width:420px">
+        <div class="modal-head">
+          <div class="modal-title">Recuperar senha</div>
+          <button class="modal-close" onclick="closeForgotPasswordModal()">×</button>
+        </div>
+
+        <div class="form-full">
+          <label class="form-label">Usuário</label>
+          <input class="form-input" id="forgot-user" placeholder="Digite seu usuário" />
+        </div>
+
+        <div class="form-full">
+          <label class="form-label">E-mail</label>
+          <input class="form-input" id="forgot-email" type="email" placeholder="usuario@empresa.com" />
+        </div>
+
+        <div class="login-err" id="forgot-err" style="display:none;margin-bottom:1rem"></div>
+
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="closeForgotPasswordModal()">Cancelar</button>
+          <button class="btn-save" onclick="sendPasswordReset()">Enviar redefinição</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Confirmacao exclusao usuario -->
+    <div class="modal-wrap" id="user-confirm-wrap">
+      <div class="modal" style="max-width:360px">
+        <div class="modal-head">
+          <div class="modal-title" style="color:var(--red)">Excluir usuário</div>
+          <button class="modal-close" onclick="closeUserConfirm()">×</button>
+        </div>
+        <div class="confirm-msg">
+          Deseja excluir o usuário <span class="confirm-highlight" id="del-user-name"></span>?
+        </div>
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="closeUserConfirm()">Cancelar</button>
+          <button class="btn-del-confirm" onclick="confirmDeleteUser()">Excluir usuário</button>
+        </div>
+      </div>
+    </div>
 
   <!-- Scripts JavaScript (carregados ao final para não bloquear o HTML) -->
   <script src="js/data.js"></script>
@@ -310,6 +457,7 @@
   <script src="js/ui.js"></script>
   <script src="js/products.js"></script>
   <script src="js/report.js"></script>
+  <script src="js/users.js"></script>
   <script src="js/app.js"></script>
 
 </body>
