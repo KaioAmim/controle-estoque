@@ -30,3 +30,14 @@ CREATE TABLE IF NOT EXISTS produtos (
 -- Usuário padrão (troque a senha após o primeiro acesso)
 INSERT IGNORE INTO usuarios (usuario, senha, nome, email)
 VALUES ('admin', '123456', 'Administrador', 'admin@unistock.com');
+
+-- Tabela de tokens de recuperação de senha
+CREATE TABLE IF NOT EXISTS reset_tokens (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token      VARCHAR(64) NOT NULL UNIQUE,
+    expira_em  DATETIME NOT NULL,
+    usado      TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);

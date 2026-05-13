@@ -83,10 +83,11 @@ function closeForgotPasswordModal() {
   document.getElementById('forgot-modal-wrap').classList.remove('open');
 }
 
-function sendPasswordReset() {
-  const user = document.getElementById('forgot-user').value.trim();
+async function sendPasswordReset() {
+  const user  = document.getElementById('forgot-user').value.trim();
   const email = document.getElementById('forgot-email').value.trim();
-  const err = document.getElementById('forgot-err');
+  const err   = document.getElementById('forgot-err');
+  const btn   = document.getElementById('btn-forgot-send');
 
   err.style.display = 'none';
 
@@ -96,9 +97,35 @@ function sendPasswordReset() {
     return;
   }
 
-  toast(`Link de redefinição enviado para ${email}.`, 'green');
-  closeForgotPasswordModal();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.textContent = 'Informe um e-mail válido.';
+    err.style.display = 'block';
+    return;
+  }
 
-  // Aqui pode ser integrado futuramente com backend PHP + SMTP.
-  console.log('Recuperação solicitada para:', user, email);
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  try {
+    const res  = await fetch('api/forgot_password.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario: user, email })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      closeForgotPasswordModal();
+      toast('Se os dados estiverem corretos, você receberá um e-mail em breve.', 'green');
+    } else {
+      err.textContent = data.erro || 'Erro ao enviar. Tente novamente.';
+      err.style.display = 'block';
+    }
+  } catch (e) {
+    err.textContent = 'Erro de comunicação com o servidor.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar redefinição';
+  }
 }
