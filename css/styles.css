@@ -437,10 +437,15 @@ tbody td { padding: 11px 14px; vertical-align: middle; }
 
 /* Fundo escurecido que cobre o app */
 .modal-wrap {
-  min-height: 700px;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   background: rgba(12,14,20,.85);
-  display: none; align-items: flex-start; justify-content: center;
+  display: none;
+  align-items: center;
+  justify-content: center;
   padding: 40px 16px;
+  overflow-y: auto;
 }
 .modal-wrap.open { display: flex; } /* aberto via JS */
 
