@@ -251,112 +251,6 @@
     </div>
 
     <!-- ════════════════════════════════════════
-         MODAL: Cadastro / Edição de produto
-         Abre como overlay sobre o conteúdo
-    ════════════════════════════════════════ -->
-    <div class="modal-wrap" id="modal-wrap">
-      <div class="modal">
-        <div class="modal-head">
-          <div class="modal-title" id="modal-title">Novo produto</div>
-          <button class="modal-close" onclick="closeModal()">×</button>
-        </div>
-
-        <!-- Linha 1: Nome e SKU -->
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Nome *</label>
-            <input class="form-input" id="f-nome" placeholder="Ex: Capacete ABS Classe B" />
-          </div>
-          <div>
-            <label class="form-label">SKU</label>
-            <input class="form-input" id="f-sku" placeholder="CAP-001" style="font-family:var(--mo)" />
-          </div>
-        </div>
-
-        <!-- Linha 2: Categoria -->
-        <div class="form-full">
-          <label class="form-label">Categoria *</label>
-          <select class="form-input" id="f-cat">
-            <option value="">- Selecione uma categoria -</option>
-            <option value="Proteção da Cabeça">Proteção da Cabeça</option>
-            <option value="Proteção dos Olhos e Face">Proteção dos Olhos e Face</option>
-            <option value="Proteção Auditiva">Proteção Auditiva</option>
-            <option value="Proteção Respiratória">Proteção Respiratória</option>
-            <option value="Proteção das Mãos e Braços">Proteção das Mãos e Braços</option>
-            <option value="Proteção dos Pés e Pernas">Proteção dos Pés e Pernas</option>
-            <option value="Proteção do Corpo e Tronco">Proteção do Corpo e Tronco</option>            
-            <option value="Equipamentos de Emergência">Equipamentos de Emergência</option>
-            <option value="Outros">Outros</option>
-          </select>
-        </div>
-
-        <!-- Linha 3: Número do CA com botão de consulta -->
-        <div class="form-full">
-          <label class="form-label">Número do CA</label>
-          <div class="ca-row">
-            <input class="form-input" id="f-ca" placeholder="Ex: 46734" style="font-family:var(--mo)" />
-            <button class="btn-ca" id="btn-ca" onclick="consultarCA()">Consultar CA</button>
-          </div>
-          <!-- Resultado da consulta de CA (ok/erro, exibido via JS) -->
-          <div class="ca-result" id="ca-result"></div>
-        </div>
-
-        <!-- Linha 4: Validade do CA -->
-        <div class="form-full">
-          <label class="form-label">Validade do CA</label>
-          <input class="form-input" id="f-val" type="date" />
-        </div>
-
-        <!-- Linha 5: Quantidade em estoque e mínimo -->
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Quantidade *</label>
-            <input class="form-input" id="f-qty" type="number" min="0" placeholder="0" />
-          </div>
-          <div>
-            <label class="form-label">Estoque mínimo</label>
-            <input class="form-input" id="f-min" type="number" min="0" placeholder="5" />
-          </div>
-        </div>
-
-        <!-- Linha 6: Descrição livre -->
-        <div class="form-full">
-          <label class="form-label">Descrição</label>
-          <textarea class="form-textarea" id="f-desc" placeholder="Especificações do EPI…"></textarea>
-        </div>
-
-        <!-- Botões de ação do formulário -->
-        <div class="form-actions">
-          <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-          <button class="btn-save" onclick="saveProduct()">Salvar produto</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════════
-         MODAL: Confirmação de exclusão
-         Exibe o nome do produto antes de deletar
-    ════════════════════════════════════════ -->
-    <div class="modal-wrap" id="confirm-wrap">
-      <div class="modal" style="max-width:360px">
-        <div class="modal-head">
-          <div class="modal-title" style="color:var(--red)">Excluir produto</div>
-          <button class="modal-close" onclick="closeConfirm()">×</button>
-        </div>
-        <!-- Nome do produto a ser excluído é inserido via JS no span #del-name -->
-        <div class="confirm-msg">
-          Deseja excluir o produto
-          <span class="confirm-highlight" id="del-name"></span>?
-          Esta ação é permanente e não pode ser desfeita.
-        </div>
-        <div class="form-actions">
-          <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
-          <button class="btn-del-confirm" onclick="confirmDelete()">Excluir produto</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════════
          TOAST (notificação flutuante)
          Aparece no canto inferior direito
     ════════════════════════════════════════ -->
@@ -365,46 +259,136 @@
       <span id="toast-msg"></span>
     </div>
 
-    <!-- ════════════════════════════════════════
-         MODAL: Cadastro / Edição de usuário
-         Abre como overlay sobre o conteúdo
-    ════════════════════════════════════════ -->
-    <div class="modal-wrap" id="user-modal-wrap">
-      <div class="modal">
-        <div class="modal-head">
-          <div class="modal-title" id="user-modal-title">Novo usuário</div>
-          <button class="modal-close" onclick="closeUserModal()">×</button>
+  </div><!-- fim #app-screen -->
+
+  <!-- ════════════════════════════════════════
+       MODAL: Cadastro / Edição de produto
+  ════════════════════════════════════════ -->
+  <div class="modal-wrap" id="modal-wrap">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="modal-title">Novo produto</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Nome *</label>
+          <input class="form-input" id="f-nome" placeholder="Ex: Capacete ABS Classe B" />
         </div>
-
-        <!-- Linha 1: Usuário e Senha -->
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Usuário *</label>
-            <input class="form-input" id="f-user-u" placeholder="Ex: joao.silva" />
-          </div>
-          <div>
-            <label class="form-label">Senha *</label>
-            <input class="form-input" id="f-user-p" type="password" placeholder="••••••" />
-          </div>
-        </div>
-
-        <!-- Linha 2: Nome -->
-        <div class="form-full">
-          <label class="form-label">Nome Completo *</label>
-          <input class="form-input" id="f-user-n" placeholder="Ex: João Silva" />
-        </div>
-
-        <!-- Mensagem de erro -->
-        <div class="login-err" id="user-err" style="display:none;margin-bottom:1rem"></div>
-
-        <!-- Botões de ação do formulário -->
-        <div class="form-actions">
-          <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
-          <button class="btn-save" onclick="saveUser()">Salvar usuário</button>
+        <div>
+          <label class="form-label">SKU</label>
+          <input class="form-input" id="f-sku" placeholder="CAP-001" style="font-family:var(--mo)" />
         </div>
       </div>
+      <div class="form-full">
+        <label class="form-label">Categoria *</label>
+        <select class="form-input" id="f-cat">
+          <option value="">— Selecione uma categoria —</option>
+          <option value="Proteção da Cabeça">Proteção da Cabeça</option>
+          <option value="Proteção dos Olhos e Face">Proteção dos Olhos e Face</option>
+          <option value="Proteção Auditiva">Proteção Auditiva</option>
+          <option value="Proteção Respiratória">Proteção Respiratória</option>
+          <option value="Proteção das Mãos e Braços">Proteção das Mãos e Braços</option>
+          <option value="Proteção dos Pés e Pernas">Proteção dos Pés e Pernas</option>
+          <option value="Proteção do Corpo e Tronco">Proteção do Corpo e Tronco</option>
+          <option value="Proteção contra Quedas">Proteção contra Quedas</option>
+          <option value="Proteção contra Calor e Fogo">Proteção contra Calor e Fogo</option>
+          <option value="Proteção contra Produtos Químicos">Proteção contra Produtos Químicos</option>
+          <option value="Proteção contra Radiação">Proteção contra Radiação</option>
+          <option value="Vestuário de Sinalização">Vestuário de Sinalização</option>
+          <option value="Equipamentos de Emergência">Equipamentos de Emergência</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+      <div class="form-full">
+        <label class="form-label">Número do CA</label>
+        <div class="ca-row">
+          <input class="form-input" id="f-ca" placeholder="Ex: 46734" style="font-family:var(--mo)" />
+          <button class="btn-ca" id="btn-ca" onclick="consultarCA()">Consultar CA</button>
+        </div>
+        <div class="ca-result" id="ca-result"></div>
+      </div>
+      <div class="form-full">
+        <label class="form-label">Validade do CA</label>
+        <input class="form-input" id="f-val" type="date" />
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Quantidade *</label>
+          <input class="form-input" id="f-qty" type="number" min="0" placeholder="0" />
+        </div>
+        <div>
+          <label class="form-label">Estoque mínimo</label>
+          <input class="form-input" id="f-min" type="number" min="0" placeholder="5" />
+        </div>
+      </div>
+      <div class="form-full">
+        <label class="form-label">Descrição</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Especificações do EPI…"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-save" onclick="saveProduct()">Salvar produto</button>
+      </div>
     </div>
-  </div><!-- fim #app-screen -->
+  </div>
+
+  <!-- ════════════════════════════════════════
+       MODAL: Confirmação de exclusão de produto
+  ════════════════════════════════════════ -->
+  <div class="modal-wrap" id="confirm-wrap">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-head">
+        <div class="modal-title" style="color:var(--red)">Excluir produto</div>
+        <button class="modal-close" onclick="closeConfirm()">×</button>
+      </div>
+      <div class="confirm-msg">
+        Deseja excluir o produto
+        <span class="confirm-highlight" id="del-name"></span>?
+        Esta ação é permanente e não pode ser desfeita.
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
+        <button class="btn-del-confirm" onclick="confirmDelete()">Excluir produto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       MODAL: Cadastro / Edição de usuário
+  ════════════════════════════════════════ -->
+  <div class="modal-wrap" id="user-modal-wrap">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="user-modal-title">Novo usuário</div>
+        <button class="modal-close" onclick="closeUserModal()">×</button>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Usuário *</label>
+          <input class="form-input" id="f-user-u" placeholder="Ex: joao.silva" />
+        </div>
+        <div>
+          <label class="form-label">Senha *</label>
+          <input class="form-input" id="f-user-p" type="password" placeholder="••••••" />
+        </div>
+      
+      </div>
+      <div class="form-full">
+        <label class="form-label">Nome Completo *</label>
+        <input class="form-input" id="f-user-n" placeholder="Ex: João Silva" />
+      </div>
+      <div class="form-full">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="f-user-e" type="email" placeholder="usuario@unither-farma.com" />
+      </div>
+      <div class="login-err" id="user-err" style="display:none;margin-bottom:1rem"></div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
+        <button class="btn-save" onclick="saveUser()">Salvar usuário</button>
+      </div>
+    </div>
+  </div>
 
 
     <!-- MODAL: Recuperação de senha -->

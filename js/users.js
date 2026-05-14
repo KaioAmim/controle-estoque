@@ -76,6 +76,7 @@ function openUserModal(idx) {
   document.getElementById('f-user-u').value = u?.u ?? '';
   document.getElementById('f-user-p').value = u?.p ?? '';
   document.getElementById('f-user-n').value = u?.n ?? '';
+  document.getElementById('f-user-e').value = u?.e ?? '';
 
   // Desabilita o campo de usuário se for edição (para não permitir mudança de login)
   document.getElementById('f-user-u').disabled = idx !== undefined;
@@ -115,11 +116,18 @@ async function saveUser() {
   const u   = document.getElementById('f-user-u').value.trim();
   const p   = document.getElementById('f-user-p').value;
   const n   = document.getElementById('f-user-n').value.trim();
+  const e   = document.getElementById('f-user-e').value.trim();
   const err = document.getElementById('user-err');
 
   if (!u) { err.textContent = 'O nome de usuário é obrigatório.'; err.style.display = 'block'; return; }
   if (!p) { err.textContent = 'A senha é obrigatória.';           err.style.display = 'block'; return; }
   if (!n) { err.textContent = 'O nome completo é obrigatório.';   err.style.display = 'block'; return; }
+  if (!e) { err.textContent = 'O e-mail é obrigatório.';          err.style.display = 'block'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+    err.textContent = 'Informe um e-mail válido.';
+    err.style.display = 'block';
+    return;
+  }
 
   // Valida duplicata apenas para novo cadastro
   if (editUserId === null && USERS.find(x => x.u === u)) {
@@ -129,7 +137,7 @@ async function saveUser() {
   }
 
   const existingUser = editUserId !== null ? USERS[editUserId] : null;
-  const obj = { id: existingUser?.id ?? null, u, p, n };
+  const obj = { id: existingUser?.id ?? null, u, p, n, e };
 
   try {
     const res = await fetch('api/users.php', {

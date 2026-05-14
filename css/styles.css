@@ -435,19 +435,21 @@ tbody td { padding: 11px 14px; vertical-align: middle; }
    MODAIS (overlay de formulários e confirmações)
 ════════════════════════════════════════════════ */
 
-/* Fundo escurecido que cobre o app */
+/* Fundo escurecido que cobre o app inteiro */
 .modal-wrap {
   position: fixed;
-  inset: 0;
+  inset: 0;                          /* top:0; right:0; bottom:0; left:0 */
   z-index: 1000;
-  background: rgba(12,14,20,.85);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 40px 16px;
+  padding: 24px 16px;
   overflow-y: auto;
 }
-.modal-wrap.open { display: flex; } /* aberto via JS */
+.modal-wrap.open { display: flex; }
 
 /* Caixa do modal */
 .modal {
