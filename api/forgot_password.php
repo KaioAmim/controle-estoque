@@ -1,14 +1,21 @@
 <?php
-/**
- * forgot_password.php
- * POST  { "usuario": "...", "email": "..." }
- *   → valida usuário+email, gera token, envia e-mail com link de reset.
- * 
- * Requer PHPMailer. Instale via Composer:
- *   composer require phpmailer/phpmailer
- * 
- * Configurações de SMTP estão na seção "CONFIGURAÇÕES" abaixo.
- */
+// ═══════════════════════════════════════════════════════════════
+//  forgot_password.php — AUTOSSUFICIENTE (sem dependências)
+//
+//  ⚠ CONFIGURE AS 3 LINHAS ABAIXO ANTES DE USAR:
+// ═══════════════════════════════════════════════════════════════
+
+$SMTP_USER = 'seuemail@gmail.com';       // ← seu Gmail
+$SMTP_PASS = 'xxxxxxxxxxxxxxxxxxxx';     // ← senha de app de 16 dígitos (sem espaços)
+$BASE_URL  = 'http://localhost/controle-estoque'; // ← URL do sistema
+
+// ── Não precisa alterar abaixo ──────────────────────────────────
+$SMTP_HOST = 'smtp.gmail.com';
+$SMTP_PORT = 587;
+$SMTP_FROM = $SMTP_USER;
+$SMTP_NAME = 'UniStock — Controle de Estoque';
+$TOKEN_TTL = 30; // minutos
+// ═══════════════════════════════════════════════════════════════
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -17,22 +24,6 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 require_once __DIR__ . '/db.php';
-
-// ── CONFIGURAÇÕES ─────────────────────────────────────────────────────────────
-// Troque pelos dados reais do seu servidor SMTP / conta de e-mail.
-define('SMTP_HOST',   'smtp.gmail.com');    // ex: smtp.gmail.com | smtp.office365.com
-define('SMTP_PORT',   587);                 // 587 = TLS | 465 = SSL
-define('SMTP_USER',   'seuemail@gmail.com');
-define('SMTP_PASS',   'sua_senha_de_app');  // Senha de app (Gmail) ou senha SMTP
-define('SMTP_FROM',   'seuemail@gmail.com');
-define('SMTP_NAME',   'UniStock — Controle de Estoque');
-
-// URL base do sistema — usada para montar o link de redefinição
-define('BASE_URL',    'http://localhost/controle-estoque');
-
-// Validade do token em minutos
-define('TOKEN_TTL',   30);
-// ─────────────────────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -44,7 +35,6 @@ $d       = json_decode(file_get_contents('php://input'), true);
 $usuario = trim($d['usuario'] ?? '');
 $email   = trim($d['email']   ?? '');
 
-// Validação básica
 if (!$usuario || !$email) {
     echo json_encode(['success' => false, 'erro' => 'Preencha o usuário e o e-mail.']);
     exit;
@@ -54,26 +44,20 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// Busca o usuário no banco (usuario + email devem bater)
+// Busca usuário
 $stmt = $conn->prepare('SELECT id, nome FROM usuarios WHERE usuario = ? AND email = ?');
 $stmt->bind_param('ss', $usuario, $email);
 $stmt->execute();
-$result = $stmt->get_result();
-$user   = $result->fetch_assoc();
+$user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-// Resposta genérica — não revela se usuário existe ou não
 if (!$user) {
-    // Aguarda 1 segundo para dificultar enumeração por timing
     sleep(1);
-    echo json_encode([
-        'success' => true,
-        'msg'     => 'Se os dados estiverem corretos, você receberá um e-mail em breve.'
-    ]);
+    echo json_encode(['success' => true]);
     exit;
 }
 
-// Garante que a tabela de tokens existe
+// Cria tabela de tokens se não existir
 $conn->query("
     CREATE TABLE IF NOT EXISTS reset_tokens (
         id         INT AUTO_INCREMENT PRIMARY KEY,
@@ -86,136 +70,164 @@ $conn->query("
     )
 ");
 
-// Invalida tokens anteriores do mesmo usuário
+// Apaga tokens antigos do usuário
 $stmt = $conn->prepare('DELETE FROM reset_tokens WHERE usuario_id = ?');
 $stmt->bind_param('i', $user['id']);
 $stmt->execute();
 $stmt->close();
 
-// Gera token seguro (64 chars hex)
-$token    = bin2hex(random_bytes(32));
-$expira   = date('Y-m-d H:i:s', strtotime('+' . TOKEN_TTL . ' minutes'));
+// Gera token seguro
+$token  = bin2hex(random_bytes(32));
+$expira = date('Y-m-d H:i:s', strtotime("+{$TOKEN_TTL} minutes"));
 
 $stmt = $conn->prepare('INSERT INTO reset_tokens (usuario_id, token, expira_em) VALUES (?, ?, ?)');
 $stmt->bind_param('iss', $user['id'], $token, $expira);
 $stmt->execute();
 $stmt->close();
 
-// ── Envio de e-mail via PHPMailer ─────────────────────────────────────────────
-$resetLink = BASE_URL . '/reset_senha.html?token=' . urlencode($token);
+$link = $BASE_URL . '/reset_senha.html?token=' . urlencode($token);
 
-try {
-    // Tenta carregar PHPMailer via Composer (autoload)
-    $autoload = __DIR__ . '/../vendor/autoload.php';
-    if (!file_exists($autoload)) {
-        throw new Exception('PHPMailer não instalado. Execute: composer require phpmailer/phpmailer');
-    }
-    require_once $autoload;
+// Envia e-mail via SMTP puro
+$erroSmtp = '';
+$ok = _smtpSend([
+    'host'      => $SMTP_HOST,
+    'port'      => $SMTP_PORT,
+    'user'      => $SMTP_USER,
+    'pass'      => $SMTP_PASS,
+    'from'      => $SMTP_FROM,
+    'from_name' => $SMTP_NAME,
+    'to'        => $email,
+    'to_name'   => $user['nome'],
+    'subject'   => 'Redefinicao de senha - UniStock',
+    'body'      => _emailHtml($user['nome'], $link, $TOKEN_TTL),
+    'altbody'   => "Ola, {$user['nome']}!\n\nAcesse o link para redefinir sua senha (valido por {$TOKEN_TTL} minutos):\n{$link}\n\nSe nao foi voce, ignore este e-mail.",
+], $erroSmtp);
 
-    use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\SMTP;
-    use PHPMailer\PHPMailer\Exception;
-
-    $mail = new PHPMailer(true);
-    $mail->isSMTP();
-    $mail->Host        = SMTP_HOST;
-    $mail->SMTPAuth    = true;
-    $mail->Username    = SMTP_USER;
-    $mail->Password    = SMTP_PASS;
-    $mail->SMTPSecure  = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port        = SMTP_PORT;
-    $mail->CharSet     = 'UTF-8';
-
-    $mail->setFrom(SMTP_FROM, SMTP_NAME);
-    $mail->addAddress($email, $user['nome']);
-    $mail->isHTML(true);
-    $mail->Subject = 'Redefinição de senha — UniStock';
-    $mail->Body    = emailTemplate($user['nome'], $resetLink, TOKEN_TTL);
-    $mail->AltBody = "Olá {$user['nome']},\n\nClique no link abaixo para redefinir sua senha (válido por " . TOKEN_TTL . " minutos):\n\n$resetLink\n\nSe não foi você, ignore este e-mail.";
-
-    $mail->send();
-
-    echo json_encode([
-        'success' => true,
-        'msg'     => 'Se os dados estiverem corretos, você receberá um e-mail em breve.'
-    ]);
-} catch (Exception $e) {
-    // Em produção, logue o erro sem expô-lo ao usuário
-    error_log('Erro ao enviar e-mail de reset: ' . $e->getMessage());
+if (!$ok) {
+    error_log("[UniStock][forgot_password] Erro SMTP: $erroSmtp");
     echo json_encode([
         'success' => false,
-        'erro'    => 'Erro ao enviar e-mail. Contate o administrador.'
+        'erro'    => 'Nao foi possivel enviar o e-mail. Verifique as configuracoes SMTP no arquivo api/forgot_password.php. Erro: ' . $erroSmtp
     ]);
+    exit;
 }
 
-// ── Template HTML do e-mail ───────────────────────────────────────────────────
-function emailTemplate(string $nome, string $link, int $ttl): string {
-    return <<<HTML
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:32px 0;">
-    <tr><td align="center">
-      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;">
-        
-        <!-- Cabeçalho -->
-        <tr>
-          <td style="background:#1a1a2e;padding:24px 32px;">
-            <p style="margin:0;color:#ffffff;font-size:20px;font-weight:bold;">📦 UniStock</p>
-            <p style="margin:4px 0 0;color:#a0a0c0;font-size:13px;">Controle de Estoque</p>
-          </td>
-        </tr>
+echo json_encode(['success' => true]);
 
-        <!-- Corpo -->
-        <tr>
-          <td style="padding:32px;">
-            <p style="margin:0 0 16px;font-size:16px;color:#1a1a2e;">Olá, <strong>{$nome}</strong>!</p>
-            <p style="margin:0 0 16px;font-size:14px;color:#444;line-height:1.6;">
-              Recebemos uma solicitação para redefinir a senha da sua conta no
-              <strong>UniStock</strong>. Clique no botão abaixo para criar uma nova senha.
-            </p>
-            <p style="margin:0 0 8px;font-size:13px;color:#888;">
-              ⏱ Este link expira em <strong>{$ttl} minutos</strong>.
-            </p>
+// ── Cliente SMTP puro (sem bibliotecas externas) ─────────────────────────────
+function _smtpSend(array $c, string &$err = ''): bool {
+    $ssl = ((int)$c['port'] === 465);
+    $ctx = stream_context_create(['ssl' => [
+        'verify_peer'       => false,
+        'verify_peer_name'  => false,
+        'allow_self_signed' => true,
+    ]]);
+    $remote = ($ssl ? 'ssl://' : '') . $c['host'] . ':' . $c['port'];
+    $sock   = @stream_socket_client($remote, $errno, $errstr, 15, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$sock) { $err = "Conexao recusada ({$c['host']}:{$c['port']}): $errstr"; return false; }
+    stream_set_timeout($sock, 15);
 
-            <!-- Botão -->
-            <table cellpadding="0" cellspacing="0" style="margin:24px 0;">
-              <tr>
-                <td style="background:#1a1a2e;border-radius:6px;">
-                  <a href="{$link}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;">
-                    Redefinir minha senha
-                  </a>
-                </td>
-              </tr>
-            </table>
+    $rd = function() use ($sock): string {
+        $b = '';
+        while ($l = fgets($sock, 512)) { $b .= $l; if (isset($l[3]) && $l[3] === ' ') break; }
+        return $b;
+    };
+    $wr  = fn($s) => fwrite($sock, $s . "\r\n");
+    $exp = function(string $code) use ($rd, &$err): bool {
+        $r = $rd();
+        if (strpos($r, $code) !== 0) { $err = "SMTP: esperava $code, recebeu: $r"; return false; }
+        return true;
+    };
 
-            <!-- Link alternativo -->
-            <p style="margin:0 0 8px;font-size:12px;color:#888;">
-              Se o botão não funcionar, copie e cole o link abaixo no navegador:
-            </p>
-            <p style="margin:0;font-size:11px;color:#1a73e8;word-break:break-all;">
-              <a href="{$link}" style="color:#1a73e8;">{$link}</a>
-            </p>
-          </td>
-        </tr>
+    $rd(); // banner
+    $wr("EHLO " . (gethostname() ?: 'localhost'));
+    $ehlo = $rd();
+    if (strpos($ehlo, '250') !== 0) { $wr("HELO localhost"); if (!$exp('250')) { fclose($sock); return false; } }
 
-        <!-- Rodapé -->
-        <tr>
-          <td style="background:#f9f9f9;padding:16px 32px;border-top:1px solid #e0e0e0;">
-            <p style="margin:0;font-size:12px;color:#999;line-height:1.5;">
-              Se você não solicitou a redefinição de senha, ignore este e-mail.
-              Sua senha atual permanece a mesma.<br>
-              Por segurança, nunca compartilhe este link.
-            </p>
-          </td>
-        </tr>
+    if (!$ssl) { // STARTTLS
+        $wr("STARTTLS");
+        if (!$exp('220')) { fclose($sock); return false; }
+        if (!stream_socket_enable_crypto($sock, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            $err = "Falha ao ativar TLS."; fclose($sock); return false;
+        }
+        $wr("EHLO " . (gethostname() ?: 'localhost'));
+        $rd();
+    }
 
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>
-HTML;
+    $wr("AUTH LOGIN");
+    if (!$exp('334')) { fclose($sock); return false; }
+    $wr(base64_encode($c['user']));
+    if (!$exp('334')) { fclose($sock); return false; }
+    $wr(base64_encode($c['pass']));
+    if (!$exp('235')) { $err = "Autenticacao falhou. Verifique SMTP_USER e SMTP_PASS."; fclose($sock); return false; }
+
+    $wr("MAIL FROM:<{$c['from']}>");
+    if (!$exp('250')) { fclose($sock); return false; }
+    $wr("RCPT TO:<{$c['to']}>");
+    if (!$exp('250')) { fclose($sock); return false; }
+    $wr("DATA");
+    if (!$exp('354')) { fclose($sock); return false; }
+
+    $bd  = 'unistock_' . md5(uniqid('', true));
+    $fn  = $c['from_name'] ? '=?UTF-8?B?' . base64_encode($c['from_name']) . '?= <' . $c['from'] . '>' : $c['from'];
+    $tn  = $c['to_name']   ? '=?UTF-8?B?' . base64_encode($c['to_name'])   . '?= <' . $c['to']   . '>' : $c['to'];
+    $sb  = '=?UTF-8?B?' . base64_encode($c['subject']) . '?=';
+
+    $msg  = "Date: " . date('r') . "\r\n";
+    $msg .= "From: $fn\r\nTo: $tn\r\nSubject: $sb\r\n";
+    $msg .= "MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$bd\"\r\n\r\n";
+    $msg .= "--$bd\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
+    $msg .= chunk_split(base64_encode($c['altbody'])) . "\r\n";
+    $msg .= "--$bd\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
+    $msg .= chunk_split(base64_encode($c['body'])) . "\r\n";
+    $msg .= "--$bd--\r\n.";
+    fwrite($sock, $msg . "\r\n");
+    if (!$exp('250')) { fclose($sock); return false; }
+
+    $wr("QUIT");
+    fclose($sock);
+    return true;
 }
+
+// ── Template HTML do e-mail ──────────────────────────────────────────────────
+function _emailHtml(string $nome, string $link, int $ttl): string { return <<<HTML
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;background:#f0f2f5;">
+<tr><td align="center">
+<table width="540" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #dde1e8;max-width:540px;">
+  <tr><td style="background:#1a1a2e;padding:28px 36px;border-radius:10px 10px 0 0;">
+    <p style="margin:0;color:#fff;font-size:20px;font-weight:bold;">&#128230; UniStock</p>
+    <p style="margin:3px 0 0;color:#8888aa;font-size:12px;">Controle de Estoque</p>
+  </td></tr>
+  <tr><td style="padding:36px;">
+    <p style="margin:0 0 10px;font-size:20px;font-weight:bold;color:#1a1a2e;">Redefinicao de senha</p>
+    <p style="margin:0 0 18px;font-size:14px;color:#444;line-height:1.6;">
+      Ola, <strong>{$nome}</strong>! Recebemos uma solicitacao para redefinir a senha da sua conta.
+    </p>
+    <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 20px;background:#fff8e1;border-left:4px solid #f59e0b;border-radius:4px;">
+      <tr><td style="padding:12px 16px;font-size:13px;color:#7c5c00;">
+        &#9200; Este link expira em <strong>{$ttl} minutos</strong>.
+      </td></tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td style="background:#1a1a2e;border-radius:8px;">
+        <a href="{$link}" style="display:inline-block;padding:14px 32px;color:#fff;font-size:15px;font-weight:bold;text-decoration:none;">
+          Redefinir minha senha
+        </a>
+      </td></tr>
+    </table>
+    <p style="margin:0 0 4px;font-size:12px;color:#999;">Se o botao nao funcionar, copie o link:</p>
+    <p style="margin:0;font-size:11px;word-break:break-all;"><a href="{$link}" style="color:#2563eb;">{$link}</a></p>
+  </td></tr>
+  <tr><td style="height:1px;background:#eee;"></td></tr>
+  <tr><td style="padding:18px 36px;background:#f9fafb;border-radius:0 0 10px 10px;">
+    <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6;">
+      Se voce nao solicitou isso, ignore este e-mail. Sua senha atual continuara a mesma.
+    </p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>
+HTML; }
 ?>
