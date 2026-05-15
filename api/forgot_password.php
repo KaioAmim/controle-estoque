@@ -5,9 +5,9 @@
 //  ⚠ CONFIGURE AS 3 LINHAS ABAIXO ANTES DE USAR:
 // ═══════════════════════════════════════════════════════════════
 
-$SMTP_USER = 'seuemail@gmail.com';       // ← seu Gmail
-$SMTP_PASS = 'xxxxxxxxxxxxxxxxxxxx';     // ← senha de app de 16 dígitos (sem espaços)
-$BASE_URL  = 'http://localhost/controle-estoque'; // ← URL do sistema
+$SMTP_USER = 'unistock.infoo@gmail.com';       // ← seu Gmail
+$SMTP_PASS = 'kirbgpbmuudfvbpp';     // ← senha de app de 16 dígitos (sem espaços)
+$BASE_URL  = 'http://localhost/projeto-faculdade/controle-estoque'; // ← URL do sistema
 
 // ── Não precisa alterar abaixo ──────────────────────────────────
 $SMTP_HOST = 'smtp.gmail.com';
