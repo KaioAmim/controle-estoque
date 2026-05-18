@@ -2,12 +2,23 @@
 // ═══════════════════════════════════════════════════════════════
 //  forgot_password.php — AUTOSSUFICIENTE (sem dependências)
 //
-//  ⚠ CONFIGURE AS 3 LINHAS ABAIXO ANTES DE USAR:
+//  ⚠ Configure as variáveis no arquivo .env na raiz do projeto
 // ═══════════════════════════════════════════════════════════════
 
-$SMTP_USER = 'unistock.infoo@gmail.com';       // ← seu Gmail
-$SMTP_PASS = 'kirbgpbmuudfvbpp';     // ← senha de app de 16 dígitos (sem espaços)
-$BASE_URL  = 'http://localhost/projeto-faculdade/controle-estoque'; // ← URL do sistema
+// Carrega variáveis do .env
+$envFile = __DIR__ . '/../.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue;
+        [$key, $value] = explode('=', $line, 2);
+        $_ENV[trim($key)] = trim($value);
+    }
+}
+
+$SMTP_USER = $_ENV['SMTP_USER'] ?? '';
+$SMTP_PASS = $_ENV['SMTP_PASS'] ?? '';
+$BASE_URL  = $_ENV['BASE_URL']  ?? 'http://localhost';
 
 // ── Não precisa alterar abaixo ──────────────────────────────────
 $SMTP_HOST = 'smtp.gmail.com';

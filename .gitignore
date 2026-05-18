@@ -1,0 +1,35 @@
+# ============================================================
+#  .GITIGNORE — controle-estoque
+# ============================================================
+
+# ── Segurança: nunca subir para o GitHub ────────────────────
+.env
+*.env
+!.env.example
+
+# ── Dependências ────────────────────────────────────────────
+/vendor/
+node_modules/
+
+# ── Logs e temporários ──────────────────────────────────────
+*.log
+/logs/
+tmp/
+temp/
+
+# ── Uploads de usuários ─────────────────────────────────────
+/uploads/
+
+# ── Sistemas operacionais ───────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs e editores ─────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── PHP ─────────────────────────────────────────────────────
+*.cache
