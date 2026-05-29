@@ -15,13 +15,9 @@
 </head>
 <body>
 
-  <!-- Texto oculto para acessibilidade (leitores de tela) -->
   <h2 class="sr-only">StockOS EPI — Sistema de gestão de estoque de EPIs com controle de CA</h2>
 
-  <!-- ════════════════════════════════════════
-       TELA DE LOGIN
-       Exibida antes do usuário se autenticar
-  ════════════════════════════════════════ -->
+  <!-- TELA DE LOGIN -->
   <div id="login-screen" class="active">
     <div class="login-wrap">
 
@@ -74,10 +70,7 @@
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════
-       TELA PRINCIPAL DO APP
-       Exibida após o login bem-sucedido
-  ════════════════════════════════════════ -->
+  <!-- TELA PRINCIPAL DO APP  -->
   <div id="app-screen">
 
     <!-- Barra superior com logo, nome do usuário e botão de sair -->
@@ -145,7 +138,7 @@
         </button>
       </nav>
 
-      <!-- ── ÁREA PRINCIPAL DE CONTEÚDO ── -->
+      <!-- ÁREA PRINCIPAL DE CONTEÚDO -->
       <main id="main">
 
         <!-- VIEW: Produtos (listagem e gestão de estoque) -->
@@ -250,20 +243,15 @@
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════
-         TOAST (notificação flutuante)
-         Aparece no canto inferior direito
-    ════════════════════════════════════════ -->
+    <!-- notificação flutuante -->
     <div class="toast" id="toast">
       <div class="toast-dot" id="toast-dot"></div>
       <span id="toast-msg"></span>
     </div>
 
-  </div><!-- fim #app-screen -->
+  </div>
 
-  <!-- ════════════════════════════════════════
-       MODAL: Cadastro / Edição de produto
-  ════════════════════════════════════════ -->
+  <!-- MODAL: Cadastro / Edição de produto -->
   <div class="modal-wrap" id="modal-wrap">
     <div class="modal">
       <div class="modal-head">
@@ -328,9 +316,7 @@
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════
-       MODAL: Confirmação de exclusão de produto
-  ════════════════════════════════════════ -->
+  <!-- MODAL: Confirmação de exclusão de produto -->
   <div class="modal-wrap" id="confirm-wrap">
     <div class="modal" style="max-width:360px">
       <div class="modal-head">
@@ -349,9 +335,7 @@
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════
-       MODAL: Cadastro / Edição de usuário
-  ════════════════════════════════════════ -->
+  <!-- MODAL: Cadastro / Edição de usuário -->
   <div class="modal-wrap" id="user-modal-wrap">
     <div class="modal">
       <div class="modal-head">

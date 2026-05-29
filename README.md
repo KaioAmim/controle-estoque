@@ -18,7 +18,6 @@
 - [API Endpoints](#api-endpoints)
 - [Credenciais Padrão](#credenciais-padrão)
 - [Capturas de Tela](#capturas-de-tela)
-- [Contribuindo](#contribuindo)
 
 ---
 
@@ -106,7 +105,7 @@ controle-estoque/
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/controle-estoque.git
+git clone https://github.com/KaioAmim/controle-estoque.git
 ```
 
 ### 2. Coloque o projeto no servidor
@@ -129,10 +128,10 @@ C:\wamp64\www\controle-estoque
 Edite o arquivo `api/db.php` com as credenciais do seu banco:
 
 ```php
-$host = 'localhost';   // Host do MySQL
-$db   = 'unistock';   // Nome do banco de dados
-$user = 'root';        // Usuário do MySQL
-$pass = '';            // Senha do MySQL
+$host = // Host do MySQL
+$db   = // Nome do banco de dados
+$user = // Usuário do MySQL
+$pass = // Senha do MySQL
 ```
 
 ---
@@ -248,23 +247,3 @@ Todos os endpoints estão na pasta `api/` e retornam JSON.
 > ⚠️ **Altere as senhas padrão imediatamente após a instalação!**
 
 ---
-
-## Contribuindo
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. Faça um **fork** do projeto
-2. Crie uma branch para sua feature: `git checkout -b feature/minha-feature`
-3. Faça o commit das suas alterações: `git commit -m 'feat: adiciona minha feature'`
-4. Envie para o repositório remoto: `git push origin feature/minha-feature`
-5. Abra um **Pull Request**
-
----
-
-## 📄 Licença
-
-Este projeto foi desenvolvido como **projeto de extensão universitária** e é de uso livre para fins educacionais.
-
----
-
-<p align="center">Desenvolvido com 💙 como projeto de extensão universitária</p>
