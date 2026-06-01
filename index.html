@@ -15,25 +15,19 @@
 </head>
 <body>
 
+  <!-- Texto oculto para acessibilidade (leitores de tela) -->
   <h2 class="sr-only">StockOS EPI — Sistema de gestão de estoque de EPIs com controle de CA</h2>
 
-  <!-- TELA DE LOGIN -->
+  <!-- ════════════════════════════════════════
+       TELA DE LOGIN
+       Exibida antes do usuário se autenticar
+  ════════════════════════════════════════ -->
   <div id="login-screen" class="active">
     <div class="login-wrap">
 
       <!-- Logo e nome do sistema -->
       <div class="login-logo">
-        <div class="logo-mark">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <div>
-          <div class="logo-text">UniStock</div>
-          <div class="logo-sub">Gestão de Equipamentos de Proteção</div>
-        </div>
+        <img src="img/marca.png" alt="UniStock" class="login-logo-img" />
       </div>
 
       <!-- Card com o formulário de login -->
@@ -44,13 +38,13 @@
         <!-- Campo: usuário -->
         <div class="field">
           <label class="field-label">Usuário</label>
-          <input class="field-input" id="lu" placeholder="admin" value="admin" />
+          <input class="field-input" id="lu" placeholder="Digite seu usuário" />
         </div>
 
         <!-- Campo: senha (pressionar Enter também faz login, via JS) -->
         <div class="field">
           <label class="field-label">Senha</label>
-          <input class="field-input" id="lp" type="password" placeholder="••••••" value="123456" />
+          <input class="field-input" id="lp" type="password" placeholder="••••••" />
         </div>
 
         <!-- Mensagem de erro de autenticação (oculta por padrão) -->
@@ -60,30 +54,21 @@
         <button class="btn-login" onclick="doLogin()">Entrar</button>
 
         <button class="forgot-password" onclick="openForgotPasswordModal()">Esqueci minha senha</button>
-
-        <!-- Dica de credenciais para demonstração -->
-        <div class="login-hint">
-          Demo: <code>admin</code> / <code>123456</code> &nbsp;ou&nbsp; <code>gerente</code> / <code>estoque</code>
-        </div>
       </div>
 
     </div>
   </div>
 
-  <!-- TELA PRINCIPAL DO APP  -->
+  <!-- ════════════════════════════════════════
+       TELA PRINCIPAL DO APP
+       Exibida após o login bem-sucedido
+  ════════════════════════════════════════ -->
   <div id="app-screen">
 
     <!-- Barra superior com logo, nome do usuário e botão de sair -->
     <div class="topbar">
       <div class="topbar-left">
-        <div class="top-logo">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <span class="top-name">UniStock</span>
+        <img src="img/logo-sem-fundo.png" alt="UniStock" class="topbar-logo-img" />
       </div>
       <div class="topbar-right">
         <!-- Chip com nome do usuário logado (id="hu" é preenchido via JS) -->
@@ -138,7 +123,7 @@
         </button>
       </nav>
 
-      <!-- ÁREA PRINCIPAL DE CONTEÚDO -->
+      <!-- ── ÁREA PRINCIPAL DE CONTEÚDO ── -->
       <main id="main">
 
         <!-- VIEW: Produtos (listagem e gestão de estoque) -->
@@ -155,7 +140,7 @@
                 <path d="M21 21l-4.35-4.35"/>
               </svg>
               <input class="search-input" id="sq"
-                placeholder="Buscar por nome, SKU ou nº CA…"
+                placeholder="Buscar por nome ou nº CA…"
                 oninput="renderTable()" />
             </div>
             <select class="filter-select" id="catf" onchange="renderTable()">
@@ -182,14 +167,14 @@
               <table>
                 <thead>
                   <tr>
-                    <th style="width:22%">Produto</th>
-                    <th style="width:13%">Categoria</th>
-                    <th style="width:16%">Nº CA / Descrição</th>
+                    <th style="width:19%">Produto</th>
+                    <th style="width:16%">Categoria</th>
+                    <th style="width:13%">Nº CA / Descrição</th>
                     <th style="width:11%">Validade CA</th>
-                    <th style="width:10%">Status CA</th>
-                    <th style="width:7%">Qtd</th>
+                    <th style="width:11%">Status CA</th>
+                    <th style="width:5%">Qtd</th>
                     <th style="width:9%">Estoque</th>
-                    <th style="width:12%">Ações</th>
+                    <th style="width:16%">Ações</th>
                   </tr>
                 </thead>
                 <tbody id="tbody"></tbody>
@@ -212,9 +197,23 @@
 
         <!-- VIEW: Usuários (gerenciamento e cadastro) -->
         <div class="view" id="view-usuarios">
-          <!-- Botão para novo usuário -->
-          <div class="toolbar">
-            <div style="flex:1"></div>
+
+          <!-- Header da seção -->
+          <div class="users-page-header">
+            <div class="users-page-header-left">
+              <div class="users-page-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div>
+                <div class="users-page-title">Gerenciamento de Usuários</div>
+                <div class="users-page-sub">Controle de acesso e permissões do sistema</div>
+              </div>
+            </div>
             <button class="btn-new" onclick="openUserModal()">
               <svg viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/>
@@ -243,33 +242,32 @@
         </div>
     </div>
 
-    <!-- notificação flutuante -->
+    <!-- ════════════════════════════════════════
+         TOAST (notificação flutuante)
+         Aparece no canto inferior direito
+    ════════════════════════════════════════ -->
     <div class="toast" id="toast">
       <div class="toast-dot" id="toast-dot"></div>
       <span id="toast-msg"></span>
     </div>
 
-  </div>
+  </div><!-- fim #app-screen -->
 
-  <!-- MODAL: Cadastro / Edição de produto -->
+  <!-- ════════════════════════════════════════
+       MODAL: Cadastro / Edição de produto
+  ════════════════════════════════════════ -->
   <div class="modal-wrap" id="modal-wrap">
     <div class="modal">
       <div class="modal-head">
         <div class="modal-title" id="modal-title">Novo produto</div>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
-      <div class="form-grid">
-        <div>
-          <label class="form-label">Nome *</label>
-          <input class="form-input" id="f-nome" placeholder="Ex: Capacete ABS Classe B" />
-        </div>
-        <div>
-          <label class="form-label">SKU</label>
-          <input class="form-input" id="f-sku" placeholder="CAP-001" style="font-family:var(--mo)" />
-        </div>
+      <div class="form-full">
+        <label class="form-label">Nome</label>
+        <input class="form-input" id="f-nome" placeholder="Ex: Capacete ABS Classe B" />
       </div>
       <div class="form-full">
-        <label class="form-label">Categoria *</label>
+        <label class="form-label">Categoria</label>
         <select class="form-input" id="f-cat">
           <option value="">— Selecione uma categoria —</option>
           <option value="Proteção da Cabeça">Proteção da Cabeça</option>
@@ -297,7 +295,7 @@
       </div>
       <div class="form-grid">
         <div>
-          <label class="form-label">Quantidade *</label>
+          <label class="form-label">Quantidade</label>
           <input class="form-input" id="f-qty" type="number" min="0" placeholder="0" />
         </div>
         <div>
@@ -316,7 +314,9 @@
     </div>
   </div>
 
-  <!-- MODAL: Confirmação de exclusão de produto -->
+  <!-- ════════════════════════════════════════
+       MODAL: Confirmação de exclusão de produto
+  ════════════════════════════════════════ -->
   <div class="modal-wrap" id="confirm-wrap">
     <div class="modal" style="max-width:360px">
       <div class="modal-head">
@@ -335,7 +335,9 @@
     </div>
   </div>
 
-  <!-- MODAL: Cadastro / Edição de usuário -->
+  <!-- ════════════════════════════════════════
+       MODAL: Cadastro / Edição de usuário
+  ════════════════════════════════════════ -->
   <div class="modal-wrap" id="user-modal-wrap">
     <div class="modal">
       <div class="modal-head">

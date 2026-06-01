@@ -108,7 +108,6 @@ function renderTable() {
   const db = gDB().filter(p => {
     const mq = !q ||
       p.nome.toLowerCase().includes(q) ||
-      (p.sku || '').toLowerCase().includes(q) ||
       (p.ca  || '').includes(q);
 
     const status = estqStatus(p.qty, p.min).lbl.toLowerCase();
@@ -137,24 +136,37 @@ function renderTable() {
       return `<tr>
         <td>
           <div class="cell-name">${esc(p.nome)}</div>
-          <div class="cell-sku">${esc(p.sku)}</div>
         </td>
         <td><span class="badge-cat">${esc(p.cat)}</span></td>
         <td>
           <div class="cell-ca">${p.ca ? `<a href="https://consultaca.com/${esc(p.ca)}" target="_blank">${esc(p.ca)}</a>` : '—'}</div>
-          ${caDesc ? `<div class="cell-ca-desc" title="${esc(caDesc)}">${esc(caDesc)}</div>` : ''}
         </td>
-      <td><div class="cell-date">${fmt(p.val)}</div></td>
-      <td><span class="badge ${sc.cls}"><span class="badge-dot"></span>${sc.lbl}</span></td>
-      <td class="qty-cell">${p.qty}</td>
-      <td><span class="badge ${se.cls}"><span class="badge-dot"></span>${se.lbl}</span></td>
-      <td>
-        <div class="actions">
-          <button class="btn-edit" onclick="openModal('${p.id}')">Editar</button>
-          <button class="btn-del"  onclick="openConfirm('${p.id}')">Excluir</button>
-        </div>
-      </td>
-    </tr>`;
+        <td><div class="cell-date">${fmt(p.val)}</div></td>
+        <td><span class="badge ${sc.cls}"><span class="badge-dot"></span>${sc.lbl}</span></td>
+        <td class="qty-cell">${p.qty}</td>
+        <td><span class="badge ${se.cls}"><span class="badge-dot"></span>${se.lbl}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn-edit" onclick="openModal('${p.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar
+            </button>
+            <button class="btn-del" onclick="openConfirm('${p.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Excluir
+            </button>
+          </div>
+        </td>
+      </tr>
+      ${caDesc ? `<tr class="desc-row">
+        <td colspan="8">
+          <div class="desc-row-inner">
+            <span class="desc-label">Descrição:</span>
+            <span class="desc-text">${esc(caDesc)}</span>
+          </div>
+        </td>
+      </tr>` : ''}
+    `;
   }).join('');
 }
 
@@ -187,7 +199,7 @@ function renderAll() {
  */
 function openModal(id) {
   // Reseta estado interno
-  editId   = id || null;
+  editId   = id ? (isNaN(id) ? id : Number(id)) : null;
   caCache  = null;
 
   // Esconde e reseta o painel de resultado de CA
@@ -196,14 +208,13 @@ function openModal(id) {
   r.className = 'ca-result';
 
   // Busca o produto no banco (undefined se for novo)
-  const p = id ? gDB().find(x => x.id === id) : null;
+  const p = editId ? gDB().find(x => Number(x.id) === Number(editId)) : null;
 
   // Atualiza o título do modal
   document.getElementById('modal-title').textContent = id ? 'Editar produto' : 'Novo produto';
 
   // Preenche os campos com os dados do produto (ou valores padrão)
   document.getElementById('f-nome').value = p?.nome ?? '';
-  document.getElementById('f-sku').value  = p?.sku  ?? '';
   document.getElementById('f-cat').value  = p?.cat  ?? '';
   document.getElementById('f-ca').value   = p?.ca   ?? '';
   document.getElementById('f-val').value  = p?.val  ?? '';
@@ -302,19 +313,25 @@ async function saveProduct() {
   const nome = document.getElementById('f-nome').value.trim();
   const cat  = document.getElementById('f-cat').value;
 
-  if (!nome) { toast('O nome do produto é obrigatório.', 'danger'); return; }
-  if (!cat)  { toast('A categoria é obrigatória.', 'danger');        return; }
+  // Campos obrigatórios só ao CRIAR novo produto (não ao editar)
+  if (!editId) {
+    if (!nome) { toast('O nome do produto é obrigatório.', 'danger'); return; }
+    if (!cat)  { toast('A categoria é obrigatória.', 'danger');        return; }
+  }
+
+  // Ao editar, usa os dados existentes como fallback para campos vazios
+  const savedEditId = editId ? Number(editId) : null;
+  const existing = savedEditId ? (gDB().find(x => Number(x.id) === savedEditId) || {}) : {};
 
   const obj = {
-    id:   editId || null,   // null = novo; INT vem do banco
-    nome,
-    sku:  document.getElementById('f-sku').value.trim() || '—',
-    cat,
-    ca:   document.getElementById('f-ca').value.trim()  || null,
-    val:  document.getElementById('f-val').value         || null,
-    qty:  Math.max(0, parseInt(document.getElementById('f-qty').value) || 0),
-    min:  Math.max(0, parseInt(document.getElementById('f-min').value) || 5),
-    desc: document.getElementById('f-desc').value.trim(),
+    id:   savedEditId ?? null,
+    nome: nome || existing.nome || '',
+    cat:  cat  || existing.cat  || '',
+    ca:   document.getElementById('f-ca').value.trim()  || existing.ca  || null,
+    val:  document.getElementById('f-val').value         || existing.val || null,
+    qty:  document.getElementById('f-qty').value !== '' ? Math.max(0, parseInt(document.getElementById('f-qty').value) || 0) : (existing.qty ?? 0),
+    min:  document.getElementById('f-min').value !== '' ? Math.max(0, parseInt(document.getElementById('f-min').value) || 5) : (existing.min ?? 5),
+    desc: document.getElementById('f-desc').value.trim() || existing.desc || '',
   };
 
   closeModal();
@@ -327,20 +344,20 @@ async function saveProduct() {
     });
     const json = await res.json();
     if (json.success) {
-      // Usa o id real retornado pelo banco (INT AUTO_INCREMENT)
-      obj.id = json.id;
-
       // Atualiza localStorage com o id correto do banco
       const db = gDB();
-      if (editId) {
-        const i = db.findIndex(x => x.id == editId);
-        if (i >= 0) db[i] = obj;
+      if (savedEditId) {
+        const i = db.findIndex(x => Number(x.id) === savedEditId);
+        if (i >= 0) {
+          db[i] = { ...obj, id: savedEditId };
+        }
       } else {
+        obj.id = json.id;
         db.push(obj);
       }
       sDB(db);
       renderAll();
-      toast(editId ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.', 'green');
+      toast(savedEditId ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.', 'green');
     } else {
       toast('Erro ao salvar: ' + (json.erro || 'desconhecido'), 'danger');
     }

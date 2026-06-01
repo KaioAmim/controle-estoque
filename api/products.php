@@ -52,7 +52,7 @@ if ($method === 'POST') {
     $stmt = $conn->prepare(
       'UPDATE produtos SET nome=?, sku=?, categoria=?, numero_ca=?, validade_ca=?, quantidade=?, estoque_minimo=?, descricao_ca=? WHERE id=?'
     );
-    $stmt->bind_param('sssssiiis', $nome, $sku, $cat, $ca, $val, $qty, $min, $desc, $id);
+    $stmt->bind_param('sssssiisi', $nome, $sku, $cat, $ca, $val, $qty, $min, $desc, $id);
     $ok = $stmt->execute();
     $newId = $id;
   } else {

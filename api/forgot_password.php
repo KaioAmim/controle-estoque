@@ -18,7 +18,20 @@ if (file_exists($envFile)) {
 
 $SMTP_USER = $_ENV['SMTP_USER'] ?? '';
 $SMTP_PASS = $_ENV['SMTP_PASS'] ?? '';
-$BASE_URL  = $_ENV['BASE_URL']  ?? 'http://localhost';
+
+// ── BASE_URL: detecta automaticamente se não estiver no .env ──
+if (!empty($_ENV['BASE_URL'])) {
+    $BASE_URL = rtrim($_ENV['BASE_URL'], '/');
+} else {
+    // Detecta protocolo (http ou https)
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    // Detecta host (funciona em qualquer dispositivo na rede)
+    $host   = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+    // Detecta o caminho base (pasta do projeto)
+    $scriptDir = dirname(dirname($_SERVER['SCRIPT_NAME'])); // sobe de /api/ para /
+    $scriptDir = rtrim($scriptDir, '/');
+    $BASE_URL  = $scheme . '://' . $host . $scriptDir;
+}
 
 // ── Não precisa alterar abaixo ──────────────────────────────────
 $SMTP_HOST = 'smtp.gmail.com';
@@ -118,7 +131,7 @@ if (!$ok) {
     error_log("[UniStock][forgot_password] Erro SMTP: $erroSmtp");
     echo json_encode([
         'success' => false,
-        'erro'    => 'Nao foi possivel enviar o e-mail. Verifique as configuracoes SMTP no arquivo api/forgot_password.php. Erro: ' . $erroSmtp
+        'erro'    => 'Nao foi possivel enviar o e-mail. Verifique as configuracoes SMTP no arquivo .env. Erro: ' . $erroSmtp
     ]);
     exit;
 }
@@ -170,7 +183,7 @@ function _smtpSend(array $c, string &$err = ''): bool {
     $wr(base64_encode($c['user']));
     if (!$exp('334')) { fclose($sock); return false; }
     $wr(base64_encode($c['pass']));
-    if (!$exp('235')) { $err = "Autenticacao falhou. Verifique SMTP_USER e SMTP_PASS."; fclose($sock); return false; }
+    if (!$exp('235')) { $err = "Autenticacao falhou. Verifique SMTP_USER e SMTP_PASS no arquivo .env."; fclose($sock); return false; }
 
     $wr("MAIL FROM:<{$c['from']}>");
     if (!$exp('250')) { fclose($sock); return false; }

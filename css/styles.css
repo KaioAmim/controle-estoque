@@ -118,7 +118,7 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.logo-mark svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.logo-mark svg { width: 22px; height: 22px; color: #fff; stroke-linecap: round; stroke-linejoin: round; }
 .logo-text { font-size: 20px; font-weight: 600; color: var(--tx); }
 .logo-sub  { font-size: 11px; color: var(--tx3); letter-spacing: .04em; margin-top: 1px; }
 
@@ -202,7 +202,7 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.top-logo svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.top-logo svg { width: 16px; height: 16px; color: #fff; stroke-linecap: round; stroke-linejoin: round; }
 .top-name { font-size: 15px; font-weight: 600; }
 
 .topbar-right { display: flex; align-items: center; gap: 10px; }
@@ -286,7 +286,7 @@ main {
 
 /* Views de conteúdo: apenas a .active fica visível */
 .view        { display: none; }
-.view.active { display: contents; }
+.view.active { display: flex; flex-direction: column; gap: 1.25rem; }
 
 
 /* ════════════════════════════════════════════════
@@ -357,38 +357,39 @@ main {
 
 table {
   width: 100%; border-collapse: collapse;
-  font-size: 12px; min-width: 620px; /* evita quebra de layout em telas pequenas */
+  font-size: 13px; min-width: 860px;
+  table-layout: fixed;
 }
 
 /* Cabeçalho da tabela */
 thead th {
-  padding: 10px 14px;
-  text-align: left; font-size: 10px; font-weight: 600; color: var(--tx3);
+  padding: 11px 16px;
+  text-align: left; font-size: 11px; font-weight: 600; color: var(--tx3);
   letter-spacing: .06em; text-transform: uppercase;
   background: var(--surface); border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  overflow: hidden;
 }
 
 /* Linhas do corpo da tabela */
 tbody tr { border-bottom: 1px solid rgba(42,45,62,.6); transition: background .1s; }
 tbody tr:last-child { border-bottom: none; }
-tbody tr:hover      { background: rgba(99,102,241,.04); } /* destaque sutil ao hover */
-tbody td { padding: 11px 14px; vertical-align: middle; }
+tbody tr:hover      { background: rgba(99,102,241,.04); }
+tbody td { padding: 14px 16px; vertical-align: middle; overflow: hidden; }
 
 /* Células com formatação especial */
-.cell-name { font-weight: 500; color: var(--tx); font-size: 13px; }
-.cell-sku  { font-size: 11px; color: var(--tx3); font-family: var(--mo); margin-top: 2px; }
-.cell-ca{ text-align:center; font-family: var(--mo); font-size: 12px; font-weight: 500; }
-.cell-ca a{ color:#67e8f9; text-decoration:none; font-weight:600; display:inline-block; width:100%; }
-.cell-ca a:hover{ color:#a5f3fc; text-decoration:none; }
+.cell-name { font-weight: 600; color: var(--tx); font-size: 13px; line-height: 1.45; }
+.cell-ca { font-family: var(--mo); font-size: 13px; font-weight: 500; }
+.cell-ca a { color:#67e8f9; text-decoration:none; font-weight:600; }
+.cell-ca a:hover { color:#a5f3fc; }
 .cell-ca-desc {
-  font-size: 10px; color: var(--tx3); margin-top: 2px;
-  max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 11px; color: var(--tx3); margin-top: 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.cell-date { font-family: var(--mo); font-size: 12px; color: var(--tx2); }
+.cell-date { font-family: var(--mo); font-size: 12px; color: var(--tx2); white-space: nowrap; }
 
-/* Quantidade em estoque (fonte mono para alinhamento) */
-.qty-cell { font-family: var(--mo); font-size: 13px; font-weight: 500; }
+/* Quantidade em estoque */
+.qty-cell { font-family: var(--mo); font-size: 14px; font-weight: 600; text-align: center; }
 
 /* Linha de "sem resultados" */
 .empty-row td { text-align: center; padding: 3rem; color: var(--tx3); font-size: 13px; }
@@ -414,17 +415,34 @@ tbody td { padding: 11px 14px; vertical-align: middle; }
 .badge-none   .badge-dot { background: var(--tx3); }
 
 /* Badge específico de categoria (cor roxa) */
-.badge-cat { background: var(--accent-dim); color: var(--accent-l); font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+.badge-cat { background: var(--accent-dim); color: var(--accent-l); font-size: 11px; padding: 3px 9px; border-radius: 6px; white-space: normal; line-height: 1.4; display: inline-block; }
 
 
 /* ── BOTÕES DE AÇÃO DA TABELA ─────────────────── */
-.actions { display: flex; gap: 6px; }
+.actions { display: flex; gap: 5px; flex-wrap: nowrap; align-items: center; }
 .btn-edit, .btn-del {
   height: 28px; padding: 0 10px;
-  font-size: 11px; font-weight: 500; font-family: var(--fn);
+  font-size: 12px; font-weight: 500; font-family: var(--fn);
   border-radius: 6px; border: 1px solid var(--border);
   background: transparent; cursor: pointer; transition: .12s;
+  white-space: nowrap; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 5px;
 }
+.btn-edit svg, .btn-del svg { flex-shrink: 0; }
+
+/* Linha de descrição expandida abaixo do produto */
+.desc-row td { padding: 0 16px 10px; border-bottom: 1px solid rgba(42,45,62,.6); }
+.desc-row:last-child td { border-bottom: none; }
+.desc-row-inner {
+  display: flex; align-items: baseline; gap: 8px;
+  background: rgba(99,102,241,.04);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.desc-label { color: var(--tx3); font-weight: 600; white-space: nowrap; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.desc-text  { color: var(--tx2); line-height: 1.5; }
 .btn-edit { color: var(--accent-l); }
 .btn-edit:hover { background: var(--accent-dim); border-color: var(--accent); }
 .btn-del  { color: var(--red); }
@@ -648,4 +666,263 @@ select.form-input, select.form-select {
 
 #view-usuarios .toolbar {
   justify-content: flex-end;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+}
+
+/* ── Header da página de usuários ── */
+.users-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 1.25rem 1.5rem;
+}
+
+.users-page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.users-page-icon {
+  width: 46px;
+  height: 46px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.users-page-icon svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+}
+
+.users-page-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tx);
+}
+
+.users-page-sub {
+  font-size: 12px;
+  color: var(--tx3);
+  margin-top: 2px;
+}
+
+
+/* ════════════════════════════════════════════════
+   LOGO DA IMAGEM (substituindo SVG)
+════════════════════════════════════════════════ */
+.login-logo-img {
+  max-width: 140px;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 2rem;
+  object-fit: contain;
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+.topbar-logo-img {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+
+/* ════════════════════════════════════════════════
+   CORREÇÕES DE LAYOUT — RESPONSIVO MOBILE
+   Evita distorção em telas pequenas
+════════════════════════════════════════════════ */
+
+/* Remove a altura fixa que causa distorção */
+html, body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#login-screen {
+  min-height: 100vh;
+}
+
+#app-screen {
+  min-height: 100vh;
+}
+
+.app-body {
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+main {
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Toast fixo na viewport */
+.toast {
+  position: fixed !important;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 9999;
+}
+
+/* Modal responsivo */
+.modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ── MEDIA QUERIES MOBILE ──────────────────────── */
+@media (max-width: 768px) {
+  /* App body: sidebar vira menu horizontal no topo */
+  .app-body {
+    flex-direction: column;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    gap: 0.25rem;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar-label {
+    display: none;
+  }
+
+  .nav-btn {
+    flex-direction: row;
+    white-space: nowrap;
+    padding: 0.4rem 0.75rem;
+    font-size: 12px;
+    gap: 5px;
+    flex-shrink: 0;
+    height: auto;
+    min-height: 36px;
+  }
+
+  .nav-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .nav-count {
+    margin-left: 4px;
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  /* Topbar mobile */
+  .topbar {
+    padding: 0 0.75rem;
+  }
+
+  .topbar-logo-img {
+    height: 26px;
+  }
+
+  .btn-out {
+    font-size: 11px;
+    padding: 0 8px;
+    height: 32px;
+  }
+
+  /* Login mobile */
+  .login-wrap {
+    padding: 0 0.5rem;
+  }
+
+  .login-logo-img {
+    max-width: 180px;
+  }
+
+  /* Tabela de produtos mobile: scroll horizontal */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px;
+  }
+
+  /* Modal full-width mobile */
+  .modal-wrap {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    border-radius: var(--r2) var(--r2) 0 0;
+    max-height: 85vh;
+    width: 100%;
+    max-width: 100% !important;
+  }
+
+  /* Grid de formulário: 1 coluna no mobile */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Relatório: 1 coluna */
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Usuários: toolbar empilhada */
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .toolbar .search-box {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-right .user-chip {
+    display: none;
+  }
+
+  .nav-btn span:not(.nav-count) {
+    display: none;
+  }
+
+  .nav-btn {
+    padding: 0.4rem 0.6rem;
+    min-width: 40px;
+    justify-content: center;
+  }
 }
