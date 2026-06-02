@@ -120,6 +120,11 @@ $stmt->close();
 
 $link = $BASE_URL . '/reset_senha.html?token=' . urlencode($token);
 
+
+error_log("SMTP_USER=" . $SMTP_USER);
+error_log("SMTP_PASS=" . (empty($SMTP_PASS) ? "VAZIO" : "OK"));
+error_log("SMTP_HOST=" . $SMTP_HOST);
+error_log("SMTP_PORT=" . $SMTP_PORT);
 // Envia e-mail via SMTP puro
 $erroSmtp = '';
 $ok = _smtpSend([
