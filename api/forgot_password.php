@@ -41,7 +41,7 @@ if (getenv('BASE_URL')) {
 }
 
 // ── Não precisa alterar abaixo ──────────────────────────────────
-$SMTP_HOST = 'smtp.gmail.com';
+$SMTP_HOST = 'smtp-relay.brevo.com';
 $SMTP_PORT = 587;
 $SMTP_FROM = $SMTP_USER;
 $SMTP_NAME = 'UniStock — Controle de Estoque';
