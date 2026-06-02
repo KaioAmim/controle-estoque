@@ -16,8 +16,8 @@ if (is_readable($envFile)) {
     }
 }
 
-$BREVO_API_KEY = getenv('BREVO_API_KEY') ?: '';
-$BREVO_FROM    = getenv('BREVO_FROM')    ?: 'ad42cc001@smtp-brevo.com';
+$BREVO_API_KEY = getenv('BREVO_API_KEY');
+$BREVO_FROM    = getenv('BREVO_FROM');
 $BREVO_NAME    = 'UniStock — Controle de Estoque';
 $TOKEN_TTL     = 30; // minutos
 

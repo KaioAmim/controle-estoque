@@ -14,10 +14,10 @@
 - [Instalação e Configuração](#instalação-e-configuração)
 - [Configuração do Banco de Dados](#configuração-do-banco-de-dados)
 - [Configuração de E-mail (Recuperação de Senha)](#configuração-de-e-mail-recuperação-de-senha)
+- [Deploy no Render](#deploy-no-render)
 - [Uso do Sistema](#uso-do-sistema)
 - [API Endpoints](#api-endpoints)
 - [Credenciais Padrão](#credenciais-padrão)
-- [Capturas de Tela](#capturas-de-tela)
 
 ---
 
@@ -35,7 +35,7 @@ O sistema possui dois perfis de acesso: **administrador** (acesso completo, incl
 - **🔑 Recuperação de Senha** — Redefinição via e-mail com link temporário (expira em 30 minutos)
 - **📦 Gestão de Produtos (EPIs)**
   - Cadastro, edição e exclusão de produtos
-  - Campos: nome, SKU, categoria, quantidade, estoque mínimo
+  - Campos: nome, categoria, quantidade, estoque mínimo
   - Suporte a Certificado de Aprovação (CA): número, validade e descrição
 - **🔍 Consulta de CA Automática** — Busca dados de validade e descrição do CA via integração com consultaca.com
 - **📊 Filtros de Estoque** — Filtro por status: Normal, Baixo e Zerado
@@ -47,13 +47,14 @@ O sistema possui dois perfis de acesso: **administrador** (acesso completo, incl
 
 ## Tecnologias Utilizadas
 
-| Camada     | Tecnologia                          |
-|------------|-------------------------------------|
-| Frontend   | HTML5, CSS3, JavaScript (Vanilla)   |
-| Backend    | PHP 8+                              |
-| Banco de Dados | MySQL / MariaDB                 |
-| E-mail     | SMTP via Gmail (sem biblioteca externa) |
-| Integração | Web scraping via cURL (consultaca.com) |
+| Camada         | Tecnologia                          |
+|----------------|-------------------------------------|
+| Frontend       | HTML5, CSS3, JavaScript (Vanilla)   |
+| Backend        | PHP 8+                              |
+| Banco de Dados | MySQL / MariaDB                     |
+| E-mail         | Brevo API (HTTP — sem SMTP)         |
+| Integração     | Web scraping via cURL (consultaca.com) |
+| Deploy         | Render (Docker / Apache + PHP)      |
 
 ---
 
@@ -63,14 +64,14 @@ O sistema possui dois perfis de acesso: **administrador** (acesso completo, incl
 controle-estoque/
 ├── api/
 │   ├── db.php               # Conexão com o banco de dados MySQL
-│   ├── products.php          # CRUD de produtos (GET, POST, DELETE)
-│   ├── users.php             # CRUD de usuários (GET, POST, DELETE)
-│   ├── consultar_ca.php      # Consulta de CA via scraping no consultaca.com
-│   ├── forgot_password.php   # Solicitação de redefinição de senha (envio de e-mail)
-│   ├── reset_password.php    # Processamento do token e atualização de senha
-│   └── proxy_ca.php          # Proxy auxiliar para requisições CA
+│   ├── products.php         # CRUD de produtos (GET, POST, DELETE)
+│   ├── users.php            # CRUD de usuários (GET, POST, DELETE)
+│   ├── consultar_ca.php     # Consulta de CA via scraping no consultaca.com
+│   ├── forgot_password.php  # Solicitação de redefinição de senha (Brevo API)
+│   ├── reset_password.php   # Processamento do token e atualização de senha
+│   └── proxy_ca.php         # Proxy auxiliar para requisições CA
 ├── css/
-│   └── styles.css            # Estilos globais da aplicação
+│   └── styles.css           # Estilos globais da aplicação
 ├── img/
 │   └── (logos e imagens do projeto)
 ├── js/
@@ -81,7 +82,9 @@ controle-estoque/
 │   ├── report.js            # Renderização da view de relatórios
 │   ├── ui.js                # Navegação entre views e helpers de UI
 │   └── users.js             # Gerenciamento de usuários (admin)
+├── Dockerfile               # Configuração para deploy via Docker (Render)
 ├── database.sql             # Script SQL para criação do banco de dados
+├── .env.example             # Exemplo de variáveis de ambiente
 ├── index.html               # Página principal do sistema
 └── reset_senha.html         # Página de redefinição de senha (via token)
 ```
@@ -94,7 +97,6 @@ controle-estoque/
 - **PHP** com as extensões habilitadas:
   - `mysqli`
   - `curl`
-  - `dom` / `DOMDocument`
 - **MySQL 5.7+** ou **MariaDB 10.3+**
 - Navegador moderno (Chrome, Firefox, Edge)
 
@@ -106,53 +108,60 @@ controle-estoque/
 
 ```bash
 git clone https://github.com/KaioAmim/controle-estoque.git
+cd controle-estoque
 ```
 
-### 2. Coloque o projeto no servidor
+### 2. Configure o arquivo `.env`
 
-Copie a pasta para o diretório do seu servidor web:
+Copie o exemplo e preencha com suas credenciais:
+
+```bash
+cp .env.example .env
+```
+
+```env
+# Banco de Dados
+DB_HOST=seu-host-mysql
+DB_NAME=unistock
+DB_USER=seu-usuario
+DB_PASS=sua-senha
+DB_PORT=3306
+
+# Brevo API (envio de e-mail)
+BREVO_API_KEY=xkeysib-...
+BREVO_FROM=seu-email-verificado@dominio.com
+
+# URL base do sistema (sem barra no final)
+BASE_URL=https://seu-dominio.com
+```
+
+### 3. Coloque o projeto no servidor
 
 ```bash
 # XAMPP (Windows)
 C:\xampp\htdocs\controle-estoque
 
-# WAMP (Windows)
-C:\wamp64\www\controle-estoque
-
 # Linux (Apache)
 /var/www/html/controle-estoque
-```
-
-### 3. Configure a conexão com o banco de dados
-
-Edite o arquivo `api/db.php` com as credenciais do seu banco:
-
-```php
-$host = // Host do MySQL
-$db   = // Nome do banco de dados
-$user = // Usuário do MySQL
-$pass = // Senha do MySQL
 ```
 
 ---
 
 ## Configuração do Banco de Dados
 
-### 1. Execute o script SQL
-
-Acesse o MySQL (via phpMyAdmin, terminal ou qualquer cliente) e execute o arquivo `database.sql`:
+### Execute o script SQL
 
 ```bash
 mysql -u root -p < database.sql
 ```
 
-Ou cole o conteúdo do arquivo diretamente no phpMyAdmin.
+Ou cole o conteúdo do arquivo `database.sql` diretamente no phpMyAdmin.
 
 ### O script cria:
 
 - **Banco de dados** `unistock`
-- **Tabela `usuarios`** — armazena os usuários do sistema (id, usuario, senha, nome, email)
-- **Tabela `produtos`** — armazena os EPIs (id, nome, SKU, categoria, numero_ca, descricao_ca, validade_ca, quantidade, estoque_minimo)
+- **Tabela `usuarios`** — armazena os usuários do sistema
+- **Tabela `produtos`** — armazena os EPIs
 - **Tabela `reset_tokens`** — tokens temporários para redefinição de senha
 - **Usuário padrão** `admin` com senha `123456`
 
@@ -162,60 +171,81 @@ Ou cole o conteúdo do arquivo diretamente no phpMyAdmin.
 
 ## Configuração de E-mail (Recuperação de Senha)
 
-O sistema usa o Gmail via SMTP para enviar e-mails de redefinição de senha. Para ativar essa funcionalidade:
+O sistema utiliza a **API HTTP do Brevo** para envio de e-mails — sem dependência de SMTP, compatível com qualquer hospedagem (incluindo Render).
 
-1. Acesse sua conta Google e habilite a [verificação em duas etapas](https://myaccount.google.com/security)
-2. Gere uma [Senha de App](https://myaccount.google.com/apppasswords) para "Outro aplicativo"
-3. Edite o arquivo `api/forgot_password.php` com suas credenciais:
+### 1. Crie uma conta no Brevo
 
-```php
-$SMTP_USER = 'seu-email@gmail.com';    // Seu endereço Gmail
-$SMTP_PASS = 'sua_senha_de_app';       // Senha de app de 16 dígitos (sem espaços)
-$BASE_URL  = 'http://localhost/controle-estoque'; // URL base do sistema
+Acesse [brevo.com](https://www.brevo.com) e crie uma conta gratuita (300 e-mails/dia).
+
+### 2. Gere uma API Key
+
+Vá em **Configurações → SMTP & API → API Keys → Generate a new API key**.
+
+A chave começa com `xkeysib-...`
+
+### 3. Verifique o remetente
+
+Vá em **Configurações → Remetentes, Domínios e IPs → Adicionar remetente** e confirme o e-mail que será usado como remetente.
+
+### 4. Configure as variáveis de ambiente
+
+```env
+BREVO_API_KEY=xkeysib-sua-chave-aqui
+BREVO_FROM=email-verificado@dominio.com
 ```
 
 > O link de redefinição de senha expira automaticamente em **30 minutos**.
 
 ---
 
+## Deploy no Render
+
+O projeto está configurado para deploy via Docker no [Render](https://render.com).
+
+### Variáveis de ambiente obrigatórias no painel do Render
+
+| Variável        | Descrição                              |
+|-----------------|----------------------------------------|
+| `DB_HOST`       | Host do banco de dados MySQL           |
+| `DB_NAME`       | Nome do banco                          |
+| `DB_USER`       | Usuário do banco                       |
+| `DB_PASS`       | Senha do banco                         |
+| `DB_PORT`       | Porta do banco (padrão: 3306)          |
+| `BASE_URL`      | URL pública do sistema no Render       |
+| `BREVO_API_KEY` | Chave da API do Brevo                  |
+| `BREVO_FROM`    | E-mail remetente verificado no Brevo   |
+
+> ⚠️ **Nunca suba o arquivo `.env` para o repositório.** Ele já está no `.gitignore`. Configure as variáveis diretamente no painel do Render.
+
+---
+
 ## Uso do Sistema
-
-### Acessando o sistema
-
-Abra o navegador e acesse:
-
-```
-http://localhost/controle-estoque/
-```
 
 ### Tela de Login
 
-- Insira seu **usuário** e **senha**
-- Pressione **Enter** ou clique em "Entrar"
-- Em caso de senha esquecida, clique em "Esqueci minha senha" e informe o usuário e e-mail cadastrado
+- Insira seu **usuário** e **senha** e clique em "Entrar"
+- Em caso de senha esquecida, clique em **"Esqueci minha senha"** e informe o usuário e e-mail cadastrado — você receberá um link por e-mail
 
 ### Gerenciamento de Produtos
 
-- **Adicionar EPI**: clique no botão "Novo Produto" e preencha o formulário
-- **Consultar CA**: ao informar o número do CA, clique em "Consultar CA" para buscar automaticamente a validade e a descrição
-- **Editar**: clique no ícone de edição no card do produto
-- **Excluir**: clique no ícone de exclusão (requer confirmação)
-- **Filtrar**: use os botões de filtro para ver itens com estoque **Normal**, **Baixo** ou **Zerado**
+- **Adicionar EPI**: clique em "Novo Produto" e preencha o formulário
+- **Consultar CA**: ao informar o número do CA, clique em "Consultar CA" para buscar automaticamente validade e descrição
+- **Editar / Excluir**: use os ícones no card do produto
+- **Filtrar**: use os botões para ver itens com estoque **Normal**, **Baixo** ou **Zerado**
 
 ### Relatórios
 
 Acesse a aba **Relatório** para visualizar:
 - Total de EPIs cadastrados
 - Quantidade com estoque zerado, baixo, CA vencido ou CA próximo do vencimento
-- EPIs agrupados por categoria (gráfico de barras)
+- EPIs agrupados por categoria
 - Lista de alertas ativos
 
 ### Gerenciamento de Usuários (Admin)
 
-Visível apenas para o usuário `admin`:
-- Adicionar novos usuários com nome, usuário, senha e e-mail
-- Editar dados de usuários existentes
-- Remover usuários (o usuário `admin` não pode ser removido)
+Visível apenas para o perfil `admin`:
+- Adicionar, editar e remover usuários
+- O usuário `admin` não pode ser removido
 
 ---
 
@@ -223,17 +253,17 @@ Visível apenas para o usuário `admin`:
 
 Todos os endpoints estão na pasta `api/` e retornam JSON.
 
-| Método   | Endpoint                      | Descrição                                    |
-|----------|-------------------------------|----------------------------------------------|
-| `GET`    | `api/products.php`            | Lista todos os produtos                      |
-| `POST`   | `api/products.php`            | Cria ou atualiza um produto                  |
-| `DELETE` | `api/products.php`            | Remove um produto por ID                     |
-| `GET`    | `api/users.php`               | Lista todos os usuários                      |
-| `POST`   | `api/users.php`               | Cria ou atualiza um usuário                  |
-| `DELETE` | `api/users.php`               | Remove um usuário por ID                     |
-| `GET`    | `api/consultar_ca.php?ca=NUM` | Consulta validade e descrição de um CA       |
-| `POST`   | `api/forgot_password.php`     | Solicita redefinição de senha por e-mail     |
-| `POST`   | `api/reset_password.php`      | Redefine a senha com token válido            |
+| Método   | Endpoint                      | Descrição                                |
+|----------|-------------------------------|------------------------------------------|
+| `GET`    | `api/products.php`            | Lista todos os produtos                  |
+| `POST`   | `api/products.php`            | Cria ou atualiza um produto              |
+| `DELETE` | `api/products.php`            | Remove um produto por ID                 |
+| `GET`    | `api/users.php`               | Lista todos os usuários                  |
+| `POST`   | `api/users.php`               | Cria ou atualiza um usuário              |
+| `DELETE` | `api/users.php`               | Remove um usuário por ID                 |
+| `GET`    | `api/consultar_ca.php?ca=NUM` | Consulta validade e descrição de um CA   |
+| `POST`   | `api/forgot_password.php`    | Solicita redefinição de senha por e-mail |
+| `POST`   | `api/reset_password.php`      | Redefine a senha com token válido        |
 
 ---
 
@@ -245,5 +275,3 @@ Todos os endpoints estão na pasta `api/` e retornam JSON.
 | `gerente` | `estoque` | Usuário comum |
 
 > ⚠️ **Altere as senhas padrão imediatamente após a instalação!**
-
----
