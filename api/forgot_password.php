@@ -7,21 +7,28 @@
 
 // Carrega variáveis do .env
 $envFile = __DIR__ . '/../.env';
-if (file_exists($envFile)) {
+
+if (is_readable($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
     foreach ($lines as $line) {
-        if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue;
+        if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) {
+            continue;
+        }
+
         [$key, $value] = explode('=', $line, 2);
+
+        putenv(trim($key) . '=' . trim($value));
         $_ENV[trim($key)] = trim($value);
     }
 }
 
-$SMTP_USER = $_ENV['SMTP_USER'] ?? '';
-$SMTP_PASS = $_ENV['SMTP_PASS'] ?? '';
+$SMTP_USER = getenv('SMTP_USER') ?: '';
+$SMTP_PASS = getenv('SMTP_PASS') ?: '';
 
 // ── BASE_URL: detecta automaticamente se não estiver no .env ──
-if (!empty($_ENV['BASE_URL'])) {
-    $BASE_URL = rtrim($_ENV['BASE_URL'], '/');
+if (getenv('BASE_URL')) {
+    $BASE_URL = rtrim(getenv('BASE_URL'), '/');
 } else {
     // Detecta protocolo (http ou https)
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
