@@ -10,12 +10,14 @@ if (file_exists($envFile)) {
     }
 }
 
-$host = $_ENV['DB_HOST'] ?? 'localhost';
-$db   = $_ENV['DB_NAME'] ?? 'unistock';
-$user = $_ENV['DB_USER'] ?? 'root';
-$pass = $_ENV['DB_PASS'] ?? '';
+$host = $_ENV['DB_HOST'];
+$port = $_ENV['DB_PORT'];
+$db = $_ENV['DB_NAME'];
+$user = $_ENV['DB_USER'];
+$pass = $_ENV['DB_PASS'];
 
-$conn = new mysqli($host, $user, $pass, $db);
+
+$conn = new mysqli($host, $user, $pass, $db, $port);
 if ($conn->connect_error) {
   http_response_code(500);
   die(json_encode(['erro' => 'Falha na conexão com o banco de dados']));
