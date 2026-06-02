@@ -42,7 +42,7 @@ if (getenv('BASE_URL')) {
 
 // ── Não precisa alterar abaixo ──────────────────────────────────
 $SMTP_HOST = 'smtp.gmail.com';
-$SMTP_PORT = 465;
+$SMTP_PORT = 587;
 $SMTP_FROM = $SMTP_USER;
 $SMTP_NAME = 'UniStock — Controle de Estoque';
 $TOKEN_TTL = 30; // minutos
